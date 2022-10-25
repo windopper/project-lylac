@@ -1,41 +1,53 @@
 package net.kamilereon.lylac.entity;
 
-import java.util.function.Function;
+import org.bukkit.Bukkit;
 
-import net.kamilereon.lylac.event.entity.Cause;
+import net.kamilereon.lylac.Lylac;
+import net.kamilereon.lylac.Utils;
 
 /**
  * @author kamilereon
  * @version 1.0.0
  */
-public interface Player {
+public class Player extends Entity<org.bukkit.entity.Player> {
 
-    public org.bukkit.entity.Player getPlayer();
+    protected int maxMana;
+    protected int mana;
 
+    protected int manaRegenRate = 100;
+    protected int manaConsumptionRate = 100;
 
+    protected int spellCastingSpeed = 100;
+    protected int speedWhileSpellCasting = 100;
 
-    /**
-     * 
-     * @return 플레이어의 최대 체력을 리턴
-     */
-    public int getMaxHealth();
+    protected int spellAmplificationRate = 100;
+    protected int waterAmplificationRate = 100;
+    protected int fireAmplificationRate = 100;
+    protected int airAmplificationRate = 100;
+    protected int earthAmplificationRate = 100;
     
-    public void setMaxHealth(final int value);
+    public Player(int maxHealth, org.bukkit.entity.Player bukkitEntity) {
+        super(maxHealth, bukkitEntity);
+        this.init();
+    }
 
-    public int getMaxMana();
+    public void update() {
+        org.bukkit.entity.Player player = this.getBukkitEntity();
+        player.setHealth(this.health);
+    }
 
-    public void setMaxMana(final int value);
+    public void init() {
+        Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
 
-    public double getMaxManaRate();
+            update();
+        });
+    }
 
-    public void setMaxManaRate();
+    public void fin() {
 
-    public int getHealth();
+    }
 
-    public void setHealth(Function<Integer, Integer> mutation, Cause cause);
-
-    public boolean loadData();
-
-    public boolean saveData();
-
+    public void showStatusAsActionBar() {
+        Utils.Chat.sendActionBar(bukkitEntity, "");
+    }
 }
