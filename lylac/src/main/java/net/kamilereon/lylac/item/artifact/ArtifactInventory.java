@@ -1,4 +1,4 @@
-package net.kamilereon.lylac.artifact;
+package net.kamilereon.lylac.item.artifact;
 
 import net.kamilereon.lylac.entity.Player;
 

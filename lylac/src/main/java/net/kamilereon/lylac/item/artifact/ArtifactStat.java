@@ -1,16 +1,29 @@
-package net.kamilereon.lylac.artifact;
+package net.kamilereon.lylac.item.artifact;
+
+import java.lang.reflect.Field;
+
+import net.kamilereon.lylac.entity.Player;
 
 /**
  * @author kamilereon
  * @version 1.0.0
+ * @apiNote 해당 클래스의 필드 접근 제한 여부를 좀 더 고민해 보는게 좋겠음.
  */
 public class ArtifactStat {
 
-    private int mana = 0;
+    /**
+     * 모든 필드 값은 {@link Player} 객체의 동일이름의 필드에 대해서 "합연산" 으로 계산 될 값이다.
+     * 
+     * 예1) {@value #maxMana}가 10 이고 {@link Player} 객체의 maxMana가
+     *  200일때 플레이어가 가진 모든 ArtifactStat을 {@value #getCombinedArtifactStat(ArtifactStat...)} 
+     * 을 통하여 계산 후 {@link Player} 객체로 반영하면 maxMana 값이 210이 됨
+     */
+
+    private int maxMana = 0;
     private int maxManaIncRate = 0;
     private int manaConsumptionRate = 0;
 
-    private int health = 0;
+    private int maxHealth = 0;
     private int maxHealthIncRate = 0;
     private int healthRegenRate = 0;
 
@@ -34,12 +47,39 @@ public class ArtifactStat {
         return new ArtifactStat();
     }
 
-    public int getMana() {
-        return mana;
+    /**
+     * @params artifactStats artifactStat의 모든 필드 값을 합칠 리스트
+     * @return 파라미터로 넘어온 artifactStats의 모든 필드 값을 합친 새로운 ArtifactStat 객체
+     */
+    public static ArtifactStat getCombinedArtifactStat(ArtifactStat ...artifactStats) {
+
+        ArtifactStat combined = ArtifactStat.builder(); 
+        Field[] fields = ArtifactStat.class.getDeclaredFields();
+        
+        for(ArtifactStat artifactStat : artifactStats) {
+            for(Field field : fields) {
+                try {
+                    field.setAccessible(true);
+                    String K = field.getName();
+                    int V = (int) field.get(artifactStat);
+                    Field combinedField = ArtifactStat.class.getDeclaredField(K);
+                    combinedField.setAccessible(true);
+                    combinedField.set(combined, (int) combinedField.get(combined) + V);
+                }
+                catch(Exception e) {
+
+                }
+            }
+        }
+        return combined;
     }
 
-    public void setMana(int mana) {
-        this.mana = mana;
+    public int getMaxMana() {
+        return maxMana;
+    }
+
+    public void setMaxMana(int maxMana) {
+        this.maxMana = maxMana;
     }
 
     public int getMaxManaIncRate() {
@@ -58,12 +98,12 @@ public class ArtifactStat {
         this.manaConsumptionRate = manaConsumptionRate;
     }
 
-    public int getHealth() {
-        return health;
+    public int getMaxHealth() {
+        return maxHealth;
     }
 
-    public void setHealth(int health) {
-        this.health = health;
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
     }
 
     public int getMaxHealthIncRate() {

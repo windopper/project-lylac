@@ -5,7 +5,7 @@ import org.bukkit.inventory.PlayerInventory;
 
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.Utils;
-import net.kamilereon.lylac.artifact.ArtifactInventory;
+import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 
 /**
  * @author kamilereon
