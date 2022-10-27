@@ -13,10 +13,9 @@ public class ArtifactStat {
 
     /**
      * 모든 필드 값은 {@link Player} 객체의 동일이름의 필드에 대해서 "합연산" 으로 계산 될 값이다.
-     * 
-     * 예1) {@value #maxMana}가 10 이고 {@link Player} 객체의 maxMana가
-     *  200일때 플레이어가 가진 모든 ArtifactStat을 {@value #getCombinedArtifactStat(ArtifactStat...)} 
-     * 을 통하여 계산 후 {@link Player} 객체로 반영하면 maxMana 값이 210이 됨
+     * <p>예1) {@link #maxMana}가 10 이고 {@link Player} 객체의 maxMana가
+     *  200일때 플레이어가 가진 모든 {@link #ArtifactStat}을 {@link #getCombinedArtifactStat(ArtifactStat...)} 
+     * 을 통하여 계산 후 {@link Player} 객체로 반영하면 {@link #maxMana} 값이 210이 됨</p>
      */
 
     private int maxMana = 0;

@@ -3,8 +3,11 @@ package net.kamilereon.lylac.item.artifact;
 import net.kamilereon.lylac.entity.Player;
 
 /**
+ * 아티팩트 인벤토리 클래스. 해당 클래스에서 플레이어의 아티팩트 착용 여부를 관리하고 
+ * 아티팩트들의 모든 스탯을 계산하여 플레이어의 능력치에 적용한다.
  * @author kamilereon
  * @version 1.0.0
+ * @see Player
  */
 public class ArtifactInventory {
 
