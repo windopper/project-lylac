@@ -11,10 +11,9 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
     public static final int RATE_DEFAULT = 100;
 
     protected final T bukkitEntity;
-    
+
     protected int maxHealth;
     protected int health = maxHealth;
-
     protected int maxHealthIncRate = RATE_DEFAULT;
     protected int healthRegenRate = RATE_DEFAULT;
 
@@ -144,5 +143,60 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
         this.earthResistacne = earthResistacne;
     }
 
-    /* */
+    /**
+     * 라일락 엔티티가 가진 모든 능력치의 이름과 초기값을 저장한 enum 클래스
+     * 
+     * <p>{@link #getDefaultValue()}를 통하여 해당 능력치 이름의 초기값을 구할 수 있다.</p>
+     */
+    public enum EntityStats {
+
+        maxMana(100),
+        maxManaIncRate(RATE_DEFAULT),
+        manaRegenRate(RATE_DEFAULT),
+        manaConsumptionRate(RATE_DEFAULT),
+        maxHealth(1000),
+        maxHealthIncRate(RATE_DEFAULT),
+        healthRegenRate(RATE_DEFAULT),
+        spellCastingSpeed(RATE_DEFAULT),
+        speedWhileSpellCasting(RATE_DEFAULT),
+        spellResistance(RATE_DEFAULT),
+        meleeResistance(RATE_DEFAULT),
+        waterResistance(RATE_DEFAULT),
+        fireResistance(RATE_DEFAULT),
+        airResistance(RATE_DEFAULT),
+        earthResistacne(RATE_DEFAULT),
+        spellAmplificationRate(RATE_DEFAULT),
+        waterAmplificationRate(RATE_DEFAULT),
+        fireAmplificationRate(RATE_DEFAULT),
+        airAmplificationRate(RATE_DEFAULT),
+        earthAmplificationRate(RATE_DEFAULT);
+
+        private final int defaultValue;
+        private final int min = 0;
+        private final int max = 1000;
+
+        EntityStats(int defaultValue) {
+            this.defaultValue = defaultValue;
+        }
+
+        public int getDefaultValue() {
+            return this.defaultValue;
+        }
+    }
+
+    public static class Util {
+        /**
+         * 해당 능력치를 비율로 환산하여 실제 게임에 적용 될 수 있도록 해줌
+         * 
+         * @param value 최소값 0,
+         * @return value를 100으로 나눈 값으로 리턴
+         */
+        public static double getValueToRate(int value) {
+            return (double) value / 100;
+        }
+        public static double getValueToRate(int value, boolean inverse) {
+            if(!inverse) return getValueToRate(value);
+            return (double) (200-value) / 100;
+        }
+    }
 }

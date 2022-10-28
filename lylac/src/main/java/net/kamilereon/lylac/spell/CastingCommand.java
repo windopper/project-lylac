@@ -17,6 +17,8 @@ public class CastingCommand {
      * 
      * <p>플레이어 조작키가 기본 값으로 설정되어 있다면 F키를 통해 활성화 가능</p>
      * 값 전환은 {@link #disableNextSlot()} 또는 {@link #enableNextSlot()} 참조
+     * @see #disableNextSlot()
+     * @see #enableNextSlot()
      */
     private boolean nextSlotState = false;
 

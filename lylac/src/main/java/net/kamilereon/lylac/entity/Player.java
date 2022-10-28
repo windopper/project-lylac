@@ -6,46 +6,70 @@ import org.bukkit.inventory.PlayerInventory;
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.Utils;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
+import net.kamilereon.lylac.item.artifact.ArtifactStat;
+import net.kamilereon.lylac.spell.CastingCommand;
+import net.kamilereon.lylac.spell.Spell;
+import net.kamilereon.lylac.spell.SpellInventory;
+import net.kamilereon.lylac.spell.SpellTechInventory;
 
 /**
+ * 라일락의 플레이어 객체
+ * <p>플레이어와 관련된 모든 데이터를 저장하고 관리한다.</p>
  * @author kamilereon
  * @version 1.0.0
  */
 public class Player extends Entity<org.bukkit.entity.Player> {
 
-    /*
+    /**
      * 아티팩트 인벤토리
+     * @see ArtifactInventory
      */
     private final ArtifactInventory artifactInventory = new ArtifactInventory(this);
 
+    /**
+     * 스펠테크 인벤토리
+     * @see SpellTechInventory
+     */
+    private final SpellTechInventory spellTechInventory = new SpellTechInventory(this);
+
+    /**
+     * 스펠 인벤토리. 플레이어가 지정한 스펠 목록을 저장하고 있는 객체
+     * <p>{@link CastingCommand}를 통하여 {@link SpellInventory}에 저장된 {@link Spell}들을 실행</p>
+     * @see SpellInventory
+     * @see CastingCommand
+     */
+    private final SpellInventory spellInventory = new SpellInventory(this);
+
+    protected int mana = 0;
+
     protected int maxMana;
-    protected int mana;
+    protected int maxManaIncRate = RATE_DEFAULT;
     
-    /*
+    /**
      * 마나 재생률
-     * 최소 0
+     * <p>최솟값 0</p>
      */
     protected int manaRegenRate = RATE_DEFAULT;
 
-    /*
+    /**
      * 마나 소모률
-     * 최소 0
+     * <p>최솟값 0</p>
      * 
      * 예1) 마나 소모률이 120이면 원래 마나 소비량의 1.2배 증가됨
      */
     protected int manaConsumptionRate = RATE_DEFAULT;
 
-    /*
+    /**
      * 스펠 캐스팅 속도
-     * 최소 0
+     * <p>최솟값 0</p>
      * 
      * 예1) 스펠 캐스팅 속도가 80이면 원래 캐스팅 속도에서 0.8배 느려짐
      */
     protected int spellCastingSpeed = RATE_DEFAULT;
 
-    /*
+    /**
      * 스펠 캐스팅 간 이동속도
-     * 최소 0
+     * <p>최솟값 0</p>
      * 
      * 예1) 스펠 캐스팅 간 이동속도가 120이면 원래 스펠 캐스팅 간 이동속도에서 1.2배 빨라짐
      */
@@ -55,9 +79,9 @@ public class Player extends Entity<org.bukkit.entity.Player> {
      * 속성 증폭률 즉, 데미지 증가률
      * spellAmlificationRate는 모든 속성에 대해서 적용
      * 
-     * 최소 0
-     * 예1) 공기증폭률이 120이면 데미지 계수는 1.2로 계산
-     * 예2) 공기증폭률이 80이면 데미지 계수는 0.8로 계산
+     * <p>최솟값 0</p>
+     * <p>예1) 공기증폭률이 120이면 데미지 계수는 1.2로 계산</p>
+     * <p>예2) 공기증폭률이 80이면 데미지 계수는 0.8로 계산</p>
      */
     protected int spellAmplificationRate = RATE_DEFAULT;
     protected int waterAmplificationRate = RATE_DEFAULT;
@@ -70,10 +94,16 @@ public class Player extends Entity<org.bukkit.entity.Player> {
         this.init();
     }
 
+    /**
+     * 플레이어가 착용한 아티팩트가 바뀌면 호출되는 메서드
+     * <p>해당 메서드가 호출되면 {@link ArtifactStat</p>
+     */
+    public void callWhenArtifactChanges() {
+        artifactInventory.computeAllArtifactStatsAndUpdateToInventoryHoldersStat();
+    }
+
     public void update() {
-        org.bukkit.entity.Player player = this.getBukkitEntity();
-        PlayerInventory inv = player.getInventory();
-        player.setHealth(this.health);
+
     }
 
     @Override

@@ -9,6 +9,7 @@ import net.kamilereon.lylac.item.Item;
 public class Artifact extends Item {
 
     private final ArtifactType artifactType;
+    private ArtifactStat artifactStat = new ArtifactStat();
 
     private Artifact(UUID uuid, ArtifactType type, Material material) {
         super(uuid, material);
@@ -23,14 +24,29 @@ public class Artifact extends Item {
         return this.artifactType;
     }
 
+    public ArtifactStat getArtifactStat() {
+        return artifactStat;
+    }
+
+    public void setArtifactStat(ArtifactStat artifactStat) {
+        this.artifactStat = artifactStat;
+    }
+
     public enum ArtifactType {
-        HELMET,
-        CHESTPLATE,
-        LEGGINGS,
-        BOOTS,
-        EARING,
-        NECKLACE,
-        RING,
-        SCEPTOR
+        
+        HELMET("helmet"),
+        CHESTPLATE("chestplate"),
+        LEGGINGS("leggings"),
+        BOOTS("boots"),
+        EARING("earing"),
+        NECKLACE("necklace"),
+        RING1("ring1"),
+        RING2("ring2"),
+        SCEPTOR("sceptor");
+
+        final String name;
+        ArtifactType(String name) {
+            this.name = name;
+        }
     }
 }
