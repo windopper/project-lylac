@@ -40,17 +40,6 @@ public class ArtifactInventory {
         put(ArtifactType.SCEPTOR, null);
     }};
 
-/*
-    private Artifact helmet = null;
-    private Artifact chestplate = null;
-    private Artifact leggings = null;
-    private Artifact boots = null;
-    private Artifact earing = null;
-    private Artifact necklace = null;
-    private Artifact ring1 = null;
-    private Artifact ring2 = null;
-    private Artifact sceptor = null;
-    */
 
     public ArtifactInventory(Player player) {
         this.inventoryHolder = player;
@@ -58,33 +47,15 @@ public class ArtifactInventory {
 
     public void setArtifact(ArtifactType artifactType, Artifact artifact) {
         artifacts.replace(artifactType, artifact);
-        /*try {
-            Field field = this.getClass().getDeclaredField(artifactType.name);
-            field.setAccessible(true);
-            field.set(this, artifact);
-            field.setAccessible(false);
-        }
-        catch(Exception e) {
-            
-        }*/
     }
 
     public Artifact getArtifact(ArtifactType artifactType) {
         return artifacts.get(artifactType);
-        /*try {
-            Field field = this.getClass().getDeclaredField(artifactType.name);
-            field.setAccessible(true);
-            Artifact value = (Artifact) field.get(this);
-            field.setAccessible(false);
-            return value;
-        }
-        catch(Exception e) {
-            return null;
-        }*/
     }
 
     /**
      * 보유한 모든 아티팩트들의 스탯을 합한 후, 해당 인벤토리 소유자의 스탯에 업데이트하는 메서드
+     * <p>{@link Player#callWhenArtifactChanges()} 메서드에 의해서 자동으로 실행됨</p>
      * 
      * @see Player
      * @see ArtifactStat

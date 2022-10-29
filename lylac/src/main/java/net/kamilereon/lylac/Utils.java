@@ -21,4 +21,9 @@ public class Utils {
             return Bukkit.getScheduler().runTaskTimer(Lylac.lylacPlugin, runnable, 1, tick);
         }
     }
+    public static class Event {
+        public static void callEvent(org.bukkit.event.Event event) {
+            Lylac.lylacPlugin.getServer().getPluginManager().callEvent(event);
+        }
+    }
 }

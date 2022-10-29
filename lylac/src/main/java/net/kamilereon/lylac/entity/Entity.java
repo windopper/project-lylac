@@ -1,6 +1,17 @@
 package net.kamilereon.lylac.entity;
 
-import net.kamilereon.lylac.event.entity.Cause;
+import java.lang.reflect.Field;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.plugin.PluginManager;
+
+import net.kamilereon.lylac.Lylac;
+import net.kamilereon.lylac.Utils;
+import net.kamilereon.lylac.event.Cause.HealthMutateCause;
+import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
+
 
 /**
  * @Author kamilereon
@@ -54,7 +65,10 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
      */
     abstract protected void fin();
 
-    public void mutateHealth(int mutateValue, Cause cause) {
+    public <T2 extends Entity<? extends LivingEntity>> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by) {
+        if(this.getBukkitEntity() instanceof org.bukkit.entity.Player) {
+            Utils.Event.callEvent(new LylacPlayerHealthMutateEvent<T2>((Player) this, by, mutateValue, cause));
+        }
         this.health += mutateValue;
         bukkitEntity.setHealth(this.health);
     }
@@ -63,101 +77,69 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
         return bukkitEntity;
     }
 
-    public int getMaxHealth() {
-        return maxHealth;
-    }
-
-    public void setMaxHealth(int maxHealth) {
-        this.maxHealth = maxHealth;
-    }
-
     public int getHealth() {
-        return health;
+        return this.health;
     }
 
-    public void setHealth(int health) {
-        this.health = health;
+    /**
+     * 엔티티의 스탯을 설정하게 해주는 setter 메서드
+     * 
+     * @param stats 설정하고자 하는 스탯
+     * @param value 설정하고자 하는 값
+     * @return 해당 객체 반환
+     */
+    public void setStat(EntityStats stats, int value) {
+        try {
+            Field field = this.getClass().getDeclaredField(stats.name());
+            field.setAccessible(true);
+            field.setInt(this, value);
+            field.setAccessible(false);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public int getMaxHealthIncRate() {
-        return maxHealthIncRate;
-    }
-
-    public void setMaxHealthIncRate(int maxHealthIncRate) {
-        this.maxHealthIncRate = maxHealthIncRate;
-    }
-
-    public int getHealthRegenRate() {
-        return healthRegenRate;
-    }
-
-    public void setHealthRegenRate(int healthRegenRate) {
-        this.healthRegenRate = healthRegenRate;
-    }
-
-    public int getSpellResistance() {
-        return spellResistance;
-    }
-
-    public void setSpellResistance(int spellResistance) {
-        this.spellResistance = spellResistance;
-    }
-
-    public int getMeleeResistance() {
-        return meleeResistance;
-    }
-
-    public void setMeleeResistance(int meleeResistance) {
-        this.meleeResistance = meleeResistance;
-    }
-
-    public int getWaterResistance() {
-        return waterResistance;
-    }
-
-    public void setWaterResistance(int waterResistance) {
-        this.waterResistance = waterResistance;
-    }
-
-    public int getFireResistance() {
-        return fireResistance;
-    }
-
-    public void setFireResistance(int fireResistance) {
-        this.fireResistance = fireResistance;
-    }
-
-    public int getAirResistance() {
-        return airResistance;
-    }
-
-    public void setAirResistance(int airResistance) {
-        this.airResistance = airResistance;
-    }
-
-    public int getEarthResistacne() {
-        return earthResistacne;
-    }
-
-    public void setEarthResistacne(int earthResistacne) {
-        this.earthResistacne = earthResistacne;
+        /**
+     * 
+     * @param stats 엔티티의 스탯에서 가져오고 싶은 스탯
+     * @return 해당 스탯과 이름이 같은 필드 값을 리턴
+     * @throws NoSuchFieldException 설정하고자 하는 스탯이 해당 필드에 존재하지 않을 때 발생하는 예외
+     * @throws IllegalAccessException 필드 접근을 하지 못할 때 발생하는 예외.
+     */
+    public int getStat(EntityStats stats) {
+        try {
+            Field field = this.getClass().getDeclaredField(stats.name());
+            field.setAccessible(true);
+            int V = field.getInt(this);
+            field.setAccessible(false);
+            return V;
+        }
+        catch(NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        catch(IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     /**
      * 라일락 엔티티가 가진 모든 능력치의 이름과 초기값을 저장한 enum 클래스
      * 
      * <p>{@link #getDefaultValue()}를 통하여 해당 능력치 이름의 초기값을 구할 수 있다.</p>
+     * <p>{@link #getMin()} 또는 {@link #getMax()}를 통하여 해당 능력치의 최소, 최댓값을 구할 수 있다.</p>
      */
     public enum EntityStats {
 
         maxMana(100),
         maxManaIncRate(RATE_DEFAULT),
         manaRegenRate(RATE_DEFAULT),
-        manaConsumptionRate(RATE_DEFAULT),
+        manaConsumptionRate(RATE_DEFAULT, 10, 10000),
         maxHealth(1000),
         maxHealthIncRate(RATE_DEFAULT),
         healthRegenRate(RATE_DEFAULT),
-        spellCastingSpeed(RATE_DEFAULT),
+        spellCastingSpeed(RATE_DEFAULT, 20, 10000),
         speedWhileSpellCasting(RATE_DEFAULT),
         spellResistance(RATE_DEFAULT),
         meleeResistance(RATE_DEFAULT),
@@ -172,15 +154,29 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
         earthAmplificationRate(RATE_DEFAULT);
 
         private final int defaultValue;
-        private final int min = 0;
-        private final int max = 1000;
+        private int min = 0;
+        private int max = 999999;
 
         EntityStats(int defaultValue) {
             this.defaultValue = defaultValue;
         }
 
+        EntityStats(int defaultValue, int min, int max) {
+            this.defaultValue = defaultValue;
+            this.min = min;
+            this.max = max;
+        }
+
         public int getDefaultValue() {
             return this.defaultValue;
+        }
+
+        public int getMin() {
+            return this.min;
+        }
+
+        public int getMax() {
+            return this.max;
         }
     }
 
@@ -196,7 +192,7 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
         }
         public static double getValueToRate(int value, boolean inverse) {
             if(!inverse) return getValueToRate(value);
-            return (double) (200-value) / 100;
+            return (double) (100 / value);
         }
     }
 }

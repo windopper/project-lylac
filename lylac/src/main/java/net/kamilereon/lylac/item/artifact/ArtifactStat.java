@@ -2,7 +2,11 @@ package net.kamilereon.lylac.item.artifact;
 
 import java.lang.reflect.Field;
 
+import org.bukkit.Bukkit;
+
 import net.kamilereon.lylac.entity.Player;
+import net.kamilereon.lylac.entity.Entity.EntityStats;
+import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
 
 /**
  * 
@@ -12,7 +16,6 @@ import net.kamilereon.lylac.entity.Player;
  * 
  * @author kamilereon
  * @version 1.0.0
- * @apiNote 해당 클래스의 필드 접근 제한 여부를 좀 더 고민해 보는게 좋겠음.
  * @see Artifact
  * @see ArtifactInventory
  * @see Player
@@ -48,164 +51,44 @@ public class ArtifactStat {
         return new ArtifactStat();
     }
 
-    public int getMaxMana() {
-        return maxMana;
+    /**
+     * 아티팩트의 스탯을 설정하게 해주는 setter 메서드
+     * 
+     * @param stats 설정하고자 하는 스탯
+     * @param value 설정하고자 하는 값
+     * @return 해당 객체 반환
+     */
+    public ArtifactStat setStat(EntityStats stats, int value) {
+        try {
+            Field field = this.getClass().getDeclaredField(stats.name());
+            field.setAccessible(true);
+            field.setInt(this, value);
+            field.setAccessible(false);
+        }
+        catch(Exception e) {
+            Bukkit.getConsoleSender().sendMessage(e.getStackTrace().toString());
+        }
+        return this;
     }
 
-    public void setMaxMana(int maxMana) {
-        this.maxMana = maxMana;
-    }
-
-    public int getMaxManaIncRate() {
-        return maxManaIncRate;
-    }
-
-    public void setMaxManaIncRate(int maxManaIncRate) {
-        this.maxManaIncRate = maxManaIncRate;
-    }
-
-    public int getManaRegenRate() {
-        return manaRegenRate;
-    }
-
-    public void setManaRegenRate(int manaRegenRate) {
-        this.manaRegenRate = manaRegenRate;
-    }
-
-    public int getManaConsumptionRate() {
-        return manaConsumptionRate;
-    }
-
-    public void setManaConsumptionRate(int manaConsumptionRate) {
-        this.manaConsumptionRate = manaConsumptionRate;
-    }
-
-    public int getMaxHealth() {
-        return maxHealth;
-    }
-
-    public void setMaxHealth(int maxHealth) {
-        this.maxHealth = maxHealth;
-    }
-
-    public int getMaxHealthIncRate() {
-        return maxHealthIncRate;
-    }
-
-    public void setMaxHealthIncRate(int maxHealthIncRate) {
-        this.maxHealthIncRate = maxHealthIncRate;
-    }
-
-    public int getHealthRegenRate() {
-        return healthRegenRate;
-    }
-
-    public void setHealthRegenRate(int healthRegenRate) {
-        this.healthRegenRate = healthRegenRate;
-    }
-
-    public int getSpellCastingSpeed() {
-        return spellCastingSpeed;
-    }
-
-    public void setSpellCastingSpeed(int spellCastingSpeed) {
-        this.spellCastingSpeed = spellCastingSpeed;
-    }
-
-    public int getSpeedWhileSpellCasting() {
-        return speedWhileSpellCasting;
-    }
-
-    public void setSpeedWhileSpellCasting(int speedWhileSpellCasting) {
-        this.speedWhileSpellCasting = speedWhileSpellCasting;
-    }
-
-    public int getSpellResistance() {
-        return spellResistance;
-    }
-
-    public void setSpellResistance(int spellResistance) {
-        this.spellResistance = spellResistance;
-    }
-
-    public int getMeleeResistance() {
-        return meleeResistance;
-    }
-
-    public void setMeleeResistance(int meleeResistance) {
-        this.meleeResistance = meleeResistance;
-    }
-
-    public int getWaterResistance() {
-        return waterResistance;
-    }
-
-    public void setWaterResistance(int waterResistance) {
-        this.waterResistance = waterResistance;
-    }
-
-    public int getFireResistance() {
-        return fireResistance;
-    }
-
-    public void setFireResistance(int fireResistance) {
-        this.fireResistance = fireResistance;
-    }
-
-    public int getAirResistance() {
-        return airResistance;
-    }
-
-    public void setAirResistance(int airResistance) {
-        this.airResistance = airResistance;
-    }
-
-    public int getEarthResistance() {
-        return earthResistance;
-    }
-
-    public void setEarthResistance(int earthResistance) {
-        this.earthResistance = earthResistance;
-    }
-
-    public int getSpellAmplificationRate() {
-        return spellAmplificationRate;
-    }
-
-    public void setSpellAmplificationRate(int spellAmplificationRate) {
-        this.spellAmplificationRate = spellAmplificationRate;
-    }
-
-    public int getWaterAmplificationRate() {
-        return waterAmplificationRate;
-    }
-
-    public void setWaterAmplificationRate(int waterAmplificationRate) {
-        this.waterAmplificationRate = waterAmplificationRate;
-    }
-
-    public int getFireAmplificationRate() {
-        return fireAmplificationRate;
-    }
-
-    public void setFireAmplificationRate(int fireAmplificationRate) {
-        this.fireAmplificationRate = fireAmplificationRate;
-    }
-
-    public int getAirAmplificationRate() {
-        return airAmplificationRate;
-    }
-
-    public void setAirAmplificationRate(int airAmplificationRate) {
-        this.airAmplificationRate = airAmplificationRate;
-    }
-
-    public int getEarthAmplificationRate() {
-        return earthAmplificationRate;
-    }
-
-    public void setEarthAmplificationRate(int earthAmplificationRate) {
-        this.earthAmplificationRate = earthAmplificationRate;
+    /**
+     * 
+     * @param stats 아티팩트의 스탯에서 가져오고 싶은 스탯
+     * @return 해당 스탯과 이름이 같은 필드 값을 리턴
+     * @throws NoSuchFieldException 설정하고자 하는 스탯이 해당 필드에 존재하지 않을 때 발생하는 예외
+     * @throws IllegalAccessException 필드 접근을 하지 못할 때 발생하는 예외.
+     */
+    public int getStat(EntityStats stats) throws NoSuchFieldException, IllegalAccessException {
+        try {
+            Field field = this.getClass().getDeclaredField(stats.name());
+            field.setAccessible(true);
+            int V = field.getInt(this);
+            field.setAccessible(false);
+            return V;
+        }
+        catch(NoSuchFieldException | IllegalAccessException e) {
+            throw e;
+        }
     }
 
     /* */

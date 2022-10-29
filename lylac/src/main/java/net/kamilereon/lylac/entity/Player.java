@@ -1,10 +1,16 @@
 package net.kamilereon.lylac.entity;
 
+import java.beans.BeanProperty;
+
+import javax.management.DescriptorKey;
+
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.scheduler.BukkitTask;
 
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.Utils;
+import net.kamilereon.lylac.event.Cause.HealthMutateCause;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 import net.kamilereon.lylac.item.artifact.ArtifactStat;
 import net.kamilereon.lylac.spell.CastingCommand;
@@ -53,15 +59,15 @@ public class Player extends Entity<org.bukkit.entity.Player> {
 
     /**
      * 마나 소모률
-     * <p>최솟값 0</p>
+     * <p>최솟값 10</p>
      * 
-     * 예1) 마나 소모률이 120이면 원래 마나 소비량의 1.2배 증가됨
-     */
+     * 예1) 마나 소모률이 10이면 원래 마나 소비량의 0.1배가 됨
+    */
     protected int manaConsumptionRate = RATE_DEFAULT;
 
     /**
      * 스펠 캐스팅 속도
-     * <p>최솟값 0</p>
+     * <p>최솟값 20</p>
      * 
      * 예1) 스펠 캐스팅 속도가 80이면 원래 캐스팅 속도에서 0.8배 느려짐
      */
@@ -88,6 +94,11 @@ public class Player extends Entity<org.bukkit.entity.Player> {
     protected int fireAmplificationRate = RATE_DEFAULT;
     protected int airAmplificationRate = RATE_DEFAULT;
     protected int earthAmplificationRate = RATE_DEFAULT;
+
+    private BukkitTask bukkitTaskEveryTick;
+    private BukkitTask bukkitTaskEvery5Ticks;
+    private BukkitTask bukkitTaskEvery10Ticks;
+    private BukkitTask bukkitTaskEverySecond;
     
     public Player(int maxHealth, org.bukkit.entity.Player bukkitEntity) {
         super(maxHealth, bukkitEntity);
@@ -95,8 +106,9 @@ public class Player extends Entity<org.bukkit.entity.Player> {
     }
 
     /**
-     * 플레이어가 착용한 아티팩트가 바뀌면 호출되는 메서드
-     * <p>해당 메서드가 호출되면 {@link ArtifactStat</p>
+     * 플레이어가 착용한 아티팩트가 바뀌면 자동으로 호출되는 메서드
+     * 
+     * @see ArtifactInventory#computeAllArtifactStatsAndUpdateToInventoryHoldersStat()
      */
     public void callWhenArtifactChanges() {
         artifactInventory.computeAllArtifactStatsAndUpdateToInventoryHoldersStat();
@@ -108,14 +120,28 @@ public class Player extends Entity<org.bukkit.entity.Player> {
 
     @Override
     public void init() {
-        Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
+        this.bukkitTaskEveryTick = Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
             update();
+            // 플레이어 액션바 전시 스케줄러
+            // 보스바 전시 스케줄러
         });
+        this.bukkitTaskEverySecond = Utils.Scheduler.executeContinuallyEveryTick(() -> {
+            // 마나 초당 회복 스케쥴러
+            // 체력 초당 회복 스케줄러
+        }, 20);
     }
 
     @Override
     public void fin() {
+        // 버킷 스케쥴러 종료
+        this.bukkitTaskEveryTick.cancel();
+        this.bukkitTaskEvery5Ticks.cancel();
+        this.bukkitTaskEvery10Ticks.cancel();
+        this.bukkitTaskEverySecond.cancel();
+    }
 
+    public int getMana() {
+        return this.mana;
     }
 
     public ArtifactInventory getArtifactInventory() { return this.artifactInventory; }
