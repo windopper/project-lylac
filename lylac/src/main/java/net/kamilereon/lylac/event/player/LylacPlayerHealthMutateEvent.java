@@ -7,6 +7,15 @@ import net.kamilereon.lylac.entity.Entity;
 import net.kamilereon.lylac.entity.Player;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
 
+/**
+ * 플레이어의 체력이 변화되었을때 발생하는 이벤트
+ * {@link Player#mutateHealth(int, HealthMutateCause, Entity)}에 메서드에 의해 호출된다.
+ * 
+ * @author kamilereon
+ * @version 1.0.0
+ * 
+ * @see Entity#mutateHealth(int, HealthMutateCause, Entity)
+ */
 public class LylacPlayerHealthMutateEvent <T extends Entity<? extends LivingEntity>> extends LylacPlayerEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -33,6 +42,10 @@ public class LylacPlayerHealthMutateEvent <T extends Entity<? extends LivingEnti
 
     public T getMutatedBy() {
         return by;
+    }
+
+    public int getMutateValue() {
+        return this.mutateValue;
     }
 
     @Override

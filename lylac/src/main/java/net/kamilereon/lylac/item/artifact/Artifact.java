@@ -6,18 +6,14 @@ import org.bukkit.Material;
 
 import net.kamilereon.lylac.item.Item;
 
-public class Artifact extends Item {
+public abstract class Artifact extends Item {
 
     private final ArtifactType artifactType;
     private ArtifactStat artifactStat = new ArtifactStat();
 
-    private Artifact(UUID uuid, ArtifactType type, Material material) {
+    public Artifact(UUID uuid, ArtifactType type, Material material) {
         super(uuid, material);
         this.artifactType = type;
-    }
-
-    public static Artifact builder(UUID uuid, ArtifactType type, Material material) {
-        return new Artifact(uuid, type, material);
     }
 
     public ArtifactType getArtifactType() {

@@ -2,14 +2,13 @@ package net.kamilereon.lylac.entity;
 
 import java.lang.reflect.Field;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.plugin.PluginManager;
 
-import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.Utils;
+import net.kamilereon.lylac.element.ElementDamage;
+import net.kamilereon.lylac.element.ElementDamage.Range;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
+import net.kamilereon.lylac.event.entity.LylacEntityHealthMutateEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
 
 
@@ -23,19 +22,13 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
 
     protected final T bukkitEntity;
 
+    protected ElementDamage currentElementDamage = ElementDamage.getElementDamage().setNeutral(Range.set(10, 10));
+
     protected int maxHealth;
     protected int health = maxHealth;
     protected int maxHealthIncRate = RATE_DEFAULT;
     protected int healthRegenRate = RATE_DEFAULT;
 
-    /*
-     * 속성 방어률 즉, 데미지 방어률
-     * spellResistance는 모든 속성에 대해서 적용
-     * 
-     * 최대 200
-     * 예1) 공기방어률이 120이면 받는 데미지 계수는 0.8로 계산
-     * 예2) 공기방어률이 -100이면 받는 데미지 계수는 3으로 계산
-     */
     protected int spellResistance = RATE_DEFAULT;
     protected int meleeResistance = RATE_DEFAULT;
     protected int waterResistance = RATE_DEFAULT;
@@ -65,14 +58,46 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
      */
     abstract protected void fin();
 
+    /**
+     * 해당 엔티티의 체력을 변화시키는 메서드
+     * 
+     * @param <T2> <b>by</b>의 타입
+     * @param mutateValue 변화하는 값
+     * @param cause 변화하는 이유
+     * @param by 값을 변화시키는 원인 제공자. 없으면 {@code null} 값으로 설정 가능
+     * 
+     * @see HealthMutateCause
+     * @see LylacPlayerHealthMutateEvent
+     * @see LylacEntityHealthMutateEvent
+     */
     public <T2 extends Entity<? extends LivingEntity>> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by) {
-        if(this.getBukkitEntity() instanceof org.bukkit.entity.Player) {
-            Utils.Event.callEvent(new LylacPlayerHealthMutateEvent<T2>((Player) this, by, mutateValue, cause));
+        // 해당 객체가 플레이어로 변환이 가능할 때
+        if(this instanceof Player) {
+            LylacPlayerHealthMutateEvent<T2> event = new LylacPlayerHealthMutateEvent<>((Player) this, by, mutateValue, cause);
+            Utils.Event.callEvent(event);
+        }
+        // 아닐때, 즉 플레이어 객체가 아닐때
+        else {
+
         }
         this.health += mutateValue;
         bukkitEntity.setHealth(this.health);
     }
 
+    /**
+     * 누군가를 공격할 떄 호출하는 메서드
+     * 공격할 때 속성 데미지는 자동으로 계산된 후 {@link ElementDamage} 객체로 감싸져서 공격대상의 {@link Entity#attackedBy(ElementDamage, Entity)} 메서드를 호출시키는 데 사용됨
+     * 
+     * @param <T2> <b>to</b>의 타입
+     * @param to 공격할 대상. {@link Entity}와 {@link Damageable}의 하위 클래스.
+     */
+    public abstract <T2 extends Entity<? extends LivingEntity> & Damageable> void attack(T2 to);
+
+    /**
+     * 버킷 엔티티를 반환하는 메서드
+     * 
+     * @return 버킷 엔티티
+     */
     public T getBukkitEntity() {
         return bukkitEntity;
     }

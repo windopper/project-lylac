@@ -1,30 +1,27 @@
 package net.kamilereon.lylac.entity;
 
-import java.beans.BeanProperty;
-
-import javax.management.DescriptorKey;
-
 import org.bukkit.Bukkit;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.Utils;
-import net.kamilereon.lylac.event.Cause.HealthMutateCause;
+import net.kamilereon.lylac.element.ElementDamage;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
-import net.kamilereon.lylac.item.artifact.ArtifactStat;
+import net.kamilereon.lylac.item.artifact.Sceptor;
+import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
 import net.kamilereon.lylac.spell.CastingCommand;
 import net.kamilereon.lylac.spell.Spell;
 import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.SpellTechInventory;
 
 /**
- * 라일락의 플레이어 객체
- * <p>플레이어와 관련된 모든 데이터를 저장하고 관리한다.</p>
+ * 라일락의 플레이어 구현 클래스
+ * 
  * @author kamilereon
  * @version 1.0.0
  */
-public class Player extends Entity<org.bukkit.entity.Player> {
+public class Player extends Entity<org.bukkit.entity.Player> implements Damageable {
 
     /**
      * 아티팩트 인벤토리
@@ -112,7 +109,34 @@ public class Player extends Entity<org.bukkit.entity.Player> {
      */
     public void callWhenArtifactChanges() {
         artifactInventory.computeAllArtifactStatsAndUpdateToInventoryHoldersStat();
+        callWhenElementDamageShouldChange();
     }
+
+    /**
+     * 아티팩트 또는 관련 장비의 변화로 인해 능력치가 바뀐 경우 실행되는 메서드
+     * <p>메서드가 실행되면 해당 능력치를 기준으로 {@link Player#currentElementDamage}를 재계산 함</p>
+     */
+    public void callWhenElementDamageShouldChange() {
+
+        Sceptor sceptor = (Sceptor) artifactInventory.getArtifact(ArtifactType.SCEPTOR);
+        ElementDamage sceptorElementDamage = sceptor.getElementDamage().clone(); // 클론 메서드 구현하기
+
+        double computedSpellAmp = Util.getValueToRate(spellAmplificationRate);
+        double computedEarthAmp = Util.getValueToRate(earthAmplificationRate);
+        double computedWaterAmp = Util.getValueToRate(waterAmplificationRate);
+        double computedFireAmp = Util.getValueToRate(fireAmplificationRate);
+        double computedAirAmp = Util.getValueToRate(airAmplificationRate);
+
+        sceptorElementDamage.getEarth().multiply(computedSpellAmp + computedEarthAmp);
+        sceptorElementDamage.getWater().multiply(computedSpellAmp + computedWaterAmp);
+        sceptorElementDamage.getFire().multiply(computedSpellAmp + computedFireAmp);
+        sceptorElementDamage.getAir().multiply(computedSpellAmp + computedAirAmp);
+        sceptorElementDamage.getNeutral().multiply(computedSpellAmp);
+
+        this.currentElementDamage = sceptorElementDamage;
+    }
+
+
 
     public void update() {
 
@@ -140,6 +164,16 @@ public class Player extends Entity<org.bukkit.entity.Player> {
         this.bukkitTaskEverySecond.cancel();
     }
 
+    @Override
+    public <T2 extends Entity<? extends LivingEntity>> void attackedBy(ElementDamage eDamage, T2 by) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public <T2 extends Entity<? extends LivingEntity> & Damageable> void attack(T2 to) {
+        to.attackedBy(currentElementDamage, this);
+    }
+
     public int getMana() {
         return this.mana;
     }
@@ -149,4 +183,5 @@ public class Player extends Entity<org.bukkit.entity.Player> {
     public void showStatusAsActionBar() {
         Utils.Chat.sendActionBar(bukkitEntity, "");
     }
+
 }
