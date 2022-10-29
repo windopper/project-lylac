@@ -2,11 +2,16 @@ package net.kamilereon.lylac.entity;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.Utils;
 import net.kamilereon.lylac.element.ElementDamage;
+import net.kamilereon.lylac.element.ElementDamageRange;
+import net.kamilereon.lylac.event.Cause.HealthMutateCause;
+import net.kamilereon.lylac.event.player.LylacPlayerDamageByEntityEvent;
+import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 import net.kamilereon.lylac.item.artifact.Sceptor;
 import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
@@ -21,8 +26,9 @@ import net.kamilereon.lylac.spell.SpellTechInventory;
  * @author kamilereon
  * @version 1.0.0
  */
-public class Player extends Entity<org.bukkit.entity.Player> implements Damageable {
+public class Player extends Entity implements Damageable {
 
+    private final org.bukkit.entity.Player bukkitEntity;
     /**
      * 아티팩트 인벤토리
      * @see ArtifactInventory
@@ -43,62 +49,41 @@ public class Player extends Entity<org.bukkit.entity.Player> implements Damageab
      */
     private final SpellInventory spellInventory = new SpellInventory(this);
 
+    protected int maxHealth;
+    protected int health = maxHealth;
+    protected int maxHealthIncRate = RATE_DEFAULT;
+    protected int healthRegenRate = RATE_DEFAULT;
+    
     protected int mana = 0;
-
     protected int maxMana;
     protected int maxManaIncRate = RATE_DEFAULT;
-    
-    /**
-     * 마나 재생률
-     * <p>최솟값 0</p>
-     */
     protected int manaRegenRate = RATE_DEFAULT;
-
-    /**
-     * 마나 소모률
-     * <p>최솟값 10</p>
-     * 
-     * 예1) 마나 소모률이 10이면 원래 마나 소비량의 0.1배가 됨
-    */
     protected int manaConsumptionRate = RATE_DEFAULT;
-
-    /**
-     * 스펠 캐스팅 속도
-     * <p>최솟값 20</p>
-     * 
-     * 예1) 스펠 캐스팅 속도가 80이면 원래 캐스팅 속도에서 0.8배 느려짐
-     */
+    
     protected int spellCastingSpeed = RATE_DEFAULT;
-
-    /**
-     * 스펠 캐스팅 간 이동속도
-     * <p>최솟값 0</p>
-     * 
-     * 예1) 스펠 캐스팅 간 이동속도가 120이면 원래 스펠 캐스팅 간 이동속도에서 1.2배 빨라짐
-     */
     protected int speedWhileSpellCasting = RATE_DEFAULT;
-
-    /*
-     * 속성 증폭률 즉, 데미지 증가률
-     * spellAmlificationRate는 모든 속성에 대해서 적용
-     * 
-     * <p>최솟값 0</p>
-     * <p>예1) 공기증폭률이 120이면 데미지 계수는 1.2로 계산</p>
-     * <p>예2) 공기증폭률이 80이면 데미지 계수는 0.8로 계산</p>
-     */
+    
     protected int spellAmplificationRate = RATE_DEFAULT;
     protected int waterAmplificationRate = RATE_DEFAULT;
     protected int fireAmplificationRate = RATE_DEFAULT;
     protected int airAmplificationRate = RATE_DEFAULT;
     protected int earthAmplificationRate = RATE_DEFAULT;
-
+    
+    protected int spellResistance = RATE_DEFAULT;
+    protected int meleeResistance = RATE_DEFAULT;
+    protected int waterResistance = RATE_DEFAULT;
+    protected int fireResistance = RATE_DEFAULT;
+    protected int airResistance = RATE_DEFAULT;
+    protected int earthResistacne = RATE_DEFAULT;
+    
     private BukkitTask bukkitTaskEveryTick;
     private BukkitTask bukkitTaskEvery5Ticks;
     private BukkitTask bukkitTaskEvery10Ticks;
     private BukkitTask bukkitTaskEverySecond;
     
-    public Player(int maxHealth, org.bukkit.entity.Player bukkitEntity) {
-        super(maxHealth, bukkitEntity);
+    public Player(org.bukkit.entity.Player bukkitEntity) {
+        super();
+        this.bukkitEntity = bukkitEntity;
         this.init();
     }
 
@@ -119,7 +104,14 @@ public class Player extends Entity<org.bukkit.entity.Player> implements Damageab
     public void callWhenElementDamageShouldChange() {
 
         Sceptor sceptor = (Sceptor) artifactInventory.getArtifact(ArtifactType.SCEPTOR);
-        ElementDamage sceptorElementDamage = sceptor.getElementDamage().clone(); // 클론 메서드 구현하기
+        // 만약 현재 가지고 있는 셉터가 없다면 객체 초기화
+        if(sceptor == null) {
+            this.currentElementDamage = ElementDamageRange.getElementDamageRange();
+            return;
+        }
+        // 가지고 있다면 객체 복사 후
+        // 능력치에 따라 속성 데미지 계산!
+        ElementDamageRange sceptorElementDamage = sceptor.getElementDamage().clone();
 
         double computedSpellAmp = Util.getValueToRate(spellAmplificationRate);
         double computedEarthAmp = Util.getValueToRate(earthAmplificationRate);
@@ -136,14 +128,16 @@ public class Player extends Entity<org.bukkit.entity.Player> implements Damageab
         this.currentElementDamage = sceptorElementDamage;
     }
 
-
-
     public void update() {
 
     }
 
     @Override
     public void init() {
+
+        // 플레이어 초기 설정
+        this.bukkitEntity.setMaximumNoDamageTicks(0);
+
         this.bukkitTaskEveryTick = Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
             update();
             // 플레이어 액션바 전시 스케줄러
@@ -153,6 +147,8 @@ public class Player extends Entity<org.bukkit.entity.Player> implements Damageab
             // 마나 초당 회복 스케쥴러
             // 체력 초당 회복 스케줄러
         }, 20);
+
+        // 초기 능력치 계산 및 적용
     }
 
     @Override
@@ -165,17 +161,64 @@ public class Player extends Entity<org.bukkit.entity.Player> implements Damageab
     }
 
     @Override
-    public <T2 extends Entity<? extends LivingEntity>> void attackedBy(ElementDamage eDamage, T2 by) {
-        // TODO Auto-generated method stub
+    public <T2 extends Entity> void attackedBy(ElementDamageRange eDamage, T2 by) {
+        // 총 피해량 계산 후 체력에 적용 및 이벤트 발생
+        ElementDamage picked = eDamage.pickRandomElementDamage();
+        LylacPlayerDamageByEntityEvent<T2> event = new LylacPlayerDamageByEntityEvent<T2>(this, by, picked);
+        Utils.Event.callEvent(event);
+
+        if(event.isCancelled()) return; // 이벤트가 캔슬되었을 경우 mutateHealth 메서드 호출 막음
+
+        int totalDamage = event.getElementDamage().getTotalDamage();
+        this.mutateHealth(-totalDamage, HealthMutateCause.SPELL, by);
+        this.bukkitEntity.damage(0);
+
+        // 아머스탠드를 활용한 데미지 인디케이터 소환
+
     }
 
     @Override
-    public <T2 extends Entity<? extends LivingEntity> & Damageable> void attack(T2 to) {
+    public <T2 extends Entity & Damageable> void attack(T2 to) {
         to.attackedBy(currentElementDamage, this);
+    }
+
+    @Override
+    public <T2 extends Entity> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by) {
+        LylacPlayerHealthMutateEvent<T2> event = new LylacPlayerHealthMutateEvent<>(this, by, mutateValue, cause);
+        Utils.Event.callEvent(event);
+        int nextHealth = this.health + mutateValue;
+        if(nextHealth > maxHealth) this.health = maxHealth;
+        else if(nextHealth <= maxHealth && nextHealth > 0) this.health = nextHealth;
+        else {
+            this.kill();
+        }
+        // 버킷 플레이어에 체력 반영시키기
+        
+    }
+
+    @Override
+    public void kill() {
+        // 사망이벤트 발생시키기
+        // 사망시 실행되는 로직들...
+        /**
+         * 
+         * 
+         */
+        // 사망시 즉시 리스폰
+    }
+
+    @Override
+    public int getHealth() {
+        // TODO Auto-generated method stub
+        return 0;
     }
 
     public int getMana() {
         return this.mana;
+    }
+
+    public org.bukkit.entity.Player getBukkitEntity() {
+        return this.bukkitEntity;
     }
 
     public ArtifactInventory getArtifactInventory() { return this.artifactInventory; }
@@ -183,5 +226,6 @@ public class Player extends Entity<org.bukkit.entity.Player> implements Damageab
     public void showStatusAsActionBar() {
         Utils.Chat.sendActionBar(bukkitEntity, "");
     }
+
 
 }

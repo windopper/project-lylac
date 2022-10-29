@@ -4,18 +4,18 @@ import java.util.UUID;
 
 import org.bukkit.Material;
 
-import net.kamilereon.lylac.element.ElementDamage;
+import net.kamilereon.lylac.element.ElementDamageRange;
 
 public abstract class Sceptor extends Artifact {
 
-    private ElementDamage elementDamage;
+    private ElementDamageRange elementDamage;
 
-    public Sceptor(UUID uuid, Material material, ElementDamage elementDamage) {
+    public Sceptor(UUID uuid, Material material, ElementDamageRange elementDamage) {
         super(uuid, ArtifactType.SCEPTOR, material);
         this.elementDamage = elementDamage;
     }
 
-    public ElementDamage getElementDamage() {
+    public ElementDamageRange getElementDamage() {
         return this.elementDamage;
     }
 }

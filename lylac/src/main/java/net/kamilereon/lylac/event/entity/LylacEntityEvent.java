@@ -14,13 +14,13 @@ import net.kamilereon.lylac.entity.Player;
 
 public abstract class LylacEntityEvent extends Event {
 
-    protected Entity<org.bukkit.entity.LivingEntity> entity;
+    protected Entity entity;
 
-    public LylacEntityEvent(final Entity<org.bukkit.entity.LivingEntity> who) {
+    public LylacEntityEvent(final Entity who) {
         entity = who;
     }
 
-    LylacEntityEvent(final Entity<org.bukkit.entity.LivingEntity> who, boolean async) {
+    LylacEntityEvent(final Entity who, boolean async) {
         super(async);
         entity = who;
     }

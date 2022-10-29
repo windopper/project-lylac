@@ -16,7 +16,7 @@ import net.kamilereon.lylac.event.Cause.HealthMutateCause;
  * 
  * @see Entity#mutateHealth(int, HealthMutateCause, Entity)
  */
-public class LylacPlayerHealthMutateEvent <T extends Entity<? extends LivingEntity>> extends LylacPlayerEvent {
+public class LylacPlayerHealthMutateEvent <T extends Entity> extends LylacPlayerEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final T by;

@@ -5,40 +5,26 @@ import java.lang.reflect.Field;
 import org.bukkit.entity.LivingEntity;
 
 import net.kamilereon.lylac.Utils;
-import net.kamilereon.lylac.element.ElementDamage;
-import net.kamilereon.lylac.element.ElementDamage.Range;
+import net.kamilereon.lylac.element.ElementDamageRange;
+import net.kamilereon.lylac.element.ElementDamageRange.Range;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
 import net.kamilereon.lylac.event.entity.LylacEntityHealthMutateEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
 
 
 /**
+ * 라일락 엔티티를 대표하는 최상위 클래스
+ * 
  * @Author kamilereon
  * @version 1.0.0
  */
-public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
+public abstract class Entity {
 
     public static final int RATE_DEFAULT = 100;
 
-    protected final T bukkitEntity;
+    protected ElementDamageRange currentElementDamage = ElementDamageRange.getElementDamageRange().setNeutral(Range.set(10, 10));
 
-    protected ElementDamage currentElementDamage = ElementDamage.getElementDamage().setNeutral(Range.set(10, 10));
-
-    protected int maxHealth;
-    protected int health = maxHealth;
-    protected int maxHealthIncRate = RATE_DEFAULT;
-    protected int healthRegenRate = RATE_DEFAULT;
-
-    protected int spellResistance = RATE_DEFAULT;
-    protected int meleeResistance = RATE_DEFAULT;
-    protected int waterResistance = RATE_DEFAULT;
-    protected int fireResistance = RATE_DEFAULT;
-    protected int airResistance = RATE_DEFAULT;
-    protected int earthResistacne = RATE_DEFAULT;
-
-    public Entity(int maxHealth, T bukkitEntity) {
-        this.maxHealth = maxHealth;
-        this.bukkitEntity = bukkitEntity;
+    public Entity() {
         this.init();
     }
 
@@ -59,52 +45,18 @@ public abstract class Entity <T extends org.bukkit.entity.LivingEntity> {
     abstract protected void fin();
 
     /**
-     * 해당 엔티티의 체력을 변화시키는 메서드
-     * 
-     * @param <T2> <b>by</b>의 타입
-     * @param mutateValue 변화하는 값
-     * @param cause 변화하는 이유
-     * @param by 값을 변화시키는 원인 제공자. 없으면 {@code null} 값으로 설정 가능
-     * 
-     * @see HealthMutateCause
-     * @see LylacPlayerHealthMutateEvent
-     * @see LylacEntityHealthMutateEvent
-     */
-    public <T2 extends Entity<? extends LivingEntity>> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by) {
-        // 해당 객체가 플레이어로 변환이 가능할 때
-        if(this instanceof Player) {
-            LylacPlayerHealthMutateEvent<T2> event = new LylacPlayerHealthMutateEvent<>((Player) this, by, mutateValue, cause);
-            Utils.Event.callEvent(event);
-        }
-        // 아닐때, 즉 플레이어 객체가 아닐때
-        else {
-
-        }
-        this.health += mutateValue;
-        bukkitEntity.setHealth(this.health);
-    }
-
-    /**
      * 누군가를 공격할 떄 호출하는 메서드
-     * 공격할 때 속성 데미지는 자동으로 계산된 후 {@link ElementDamage} 객체로 감싸져서 공격대상의 {@link Entity#attackedBy(ElementDamage, Entity)} 메서드를 호출시키는 데 사용됨
+     * 공격할 때 속성 데미지는 자동으로 계산된 후 {@link ElementDamageRange} 객체로 감싸져서 공격대상의 {@link Entity#attackedBy(ElementDamageRange, Entity)} 메서드를 호출시키는 데 사용됨
      * 
      * @param <T2> <b>to</b>의 타입
      * @param to 공격할 대상. {@link Entity}와 {@link Damageable}의 하위 클래스.
      */
-    public abstract <T2 extends Entity<? extends LivingEntity> & Damageable> void attack(T2 to);
+    public abstract <T2 extends Entity & Damageable> void attack(T2 to);
 
     /**
-     * 버킷 엔티티를 반환하는 메서드
-     * 
-     * @return 버킷 엔티티
+     * 해당 엔티티의 체력이 0이하 이거나 특별한 원인으로 인해 사망할때 실행되는 메서드
      */
-    public T getBukkitEntity() {
-        return bukkitEntity;
-    }
-
-    public int getHealth() {
-        return this.health;
-    }
+    public abstract void kill();
 
     /**
      * 엔티티의 스탯을 설정하게 해주는 setter 메서드
