@@ -1,6 +1,8 @@
 package net.kamilereon.lylac.entity;
 
 import net.kamilereon.lylac.event.Cause.ManaMutateCause;
+import net.kamilereon.lylac.spell.CastingCommand;
+import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 
 /**
  * 마나를 다룰 수 있고 스펠을 사용가능하게 함
@@ -29,4 +31,11 @@ public interface ManaControllable {
      * @param spellInventoryPosition 스펠 인벤토리에 있는 스펠 위치
      */
     public void castSpell(int spellInventoryPosition);
+
+    /**
+     * 스펠 시전 명령어 입력
+     * 
+     * @param castingCommand 스펠 시전 명령어 R, L, F
+     */
+    public void castingSpellCommand(CastingCommandCode castingCommand);
 }

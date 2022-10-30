@@ -18,7 +18,7 @@ public class CastingCommand {
      */
     private final CastingCommandCode[] commands = { null, null, null };
 
-    private BukkitTask waitForCommandsClear = null;
+    private BukkitTask waitingForCommandsClear = null;
 
     /**
      * 2번쨰 스펠 슬롯 활성화
@@ -57,16 +57,24 @@ public class CastingCommand {
      *  @see #castSpell()
      */
     public void attachCastingCommandCode(CastingCommandCode castingCommandCode) {
-        if(this.waitForCommandsClear != null) {
-            this.waitForCommandsClear.cancel();
-            this.waitForCommandsClear = null;
+
+        if(this.waitingForCommandsClear != null) {
+            if(!this.waitingForCommandsClear.isCancelled()) this.waitingForCommandsClear.cancel();
+            this.waitingForCommandsClear = null;
         }
+
+        if(castingCommandCode == CastingCommandCode.F) {
+            this.nextSlotState = !this.nextSlotState;
+            this.waitingForCommandsClear = Utils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
+            return;
+        }
+
         for(int i=0; i<commands.length; i++) {
             if(commands[i] == null) {
                 commands[i] = castingCommandCode;
 
                 // 1.5초 시간 지난 후 commands 초기화
-                this.waitForCommandsClear = Utils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
+                this.waitingForCommandsClear = Utils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
                 return;
             }
         }
@@ -82,8 +90,6 @@ public class CastingCommand {
     public void castSpell() {
         int spellInventoryPosition = Helper.getSpellInventoryPosition(nextSlotState, commands);
         player.castSpell(spellInventoryPosition);
-        
-        disableNextSlot();
         resetCommands();
     }
 
@@ -94,6 +100,7 @@ public class CastingCommand {
      * {@link #commands} 의 모든 값을 null 값으로 만든다.
      */
     public void resetCommands() {
+        this.nextSlotState = false;
         for(int i=0; i<commands.length; i++) {
             commands[i] = null;
         }
@@ -101,7 +108,8 @@ public class CastingCommand {
 
     public enum CastingCommandCode {
         R,
-        L
+        L,
+        F
     }
 
     private static class Helper {

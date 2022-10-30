@@ -20,4 +20,14 @@ public class SpellInventory {
     public SpellInventory(Player player) {
         this.player = player;
     }
+
+    /**
+     * 
+     * @param spellInventoryPosition 스펠 인벤토리의 위치
+     * @return 스펠 리턴
+     */
+    public Spell getSpell(int spellInventoryPosition) {
+        if(spellInventoryPosition >= 0 && spellInventoryPosition < 8) return null;
+        return registeredSpells[spellInventoryPosition];
+    }
 }

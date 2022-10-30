@@ -2,6 +2,7 @@ package net.kamilereon.lylac.entity;
 
 import org.bukkit.entity.LivingEntity;
 
+import net.kamilereon.lylac.element.ElementDamage;
 import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
 
@@ -16,7 +17,7 @@ public interface Damageable {
      * @param eDamage 공격당했을 때 받은 속성 데미지 객체
      * @param by 나를 공격한 객체. {@link Entity}의 하위 클래스
      */
-    public <T2 extends Entity> void attackedBy(ElementDamageRange eDamage, T2 by);
+    public <T2 extends Entity> void attackedBy(ElementDamage eDamage, T2 by);
 
     /**
      * 해당 엔티티의 체력을 변화시키는 메서드

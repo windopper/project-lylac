@@ -6,7 +6,6 @@ import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 import net.kamilereon.lylac.item.artifact.ArtifactStat;
 import net.kamilereon.lylac.permission.LylacPlayerPermission;
 import net.kamilereon.lylac.permission.LylacPlayerPermission.LylacPlayerPermissionType;
-import net.kamilereon.lylac.quest.LylacQuest;
 import net.kamilereon.lylac.quest.LylacQuest.LylacQuestList;
 import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.SpellTechInventory;

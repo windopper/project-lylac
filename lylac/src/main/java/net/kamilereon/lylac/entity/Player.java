@@ -3,8 +3,6 @@ package net.kamilereon.lylac.entity;
 import java.lang.reflect.Field;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.kamilereon.lylac.Lylac;
@@ -27,6 +25,7 @@ import net.kamilereon.lylac.spell.CastingCommand;
 import net.kamilereon.lylac.spell.Spell;
 import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.SpellTechInventory;
+import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 
 /**
  * 라일락의 플레이어 구현 클래스
@@ -133,7 +132,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     
     @Override
     public <T2 extends Entity & Damageable> void attack(T2 to) {
-        to.attackedBy(currentElementDamage, this);
+        to.attackedBy(currentElementDamage.pickRandomElementDamage(), this);
     }
 
     @Override
@@ -148,10 +147,9 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     }
 
     @Override
-    public <T2 extends Entity> void attackedBy(ElementDamageRange eDamage, T2 by) {
+    public <T2 extends Entity> void attackedBy(ElementDamage eDamage, T2 by) {
         // 총 피해량 계산 후 체력에 적용 및 이벤트 발생
-        ElementDamage picked = eDamage.pickRandomElementDamage();
-        LylacPlayerDamageByEntityEvent<T2> event = new LylacPlayerDamageByEntityEvent<T2>(this, by, picked);
+        LylacPlayerDamageByEntityEvent<T2> event = new LylacPlayerDamageByEntityEvent<T2>(this, by, eDamage);
         Utils.Event.callEvent(event);
 
         if(event.isCancelled()) return; // 이벤트가 캔슬되었을 경우 mutateHealth 메서드 호출 막음
@@ -302,8 +300,23 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void castSpell(int spellInventoryPosition) {
-        // TODO Auto-generated method stub
-        
+        Spell spell = this.spellInventory.getSpell(spellInventoryPosition);
+        if(spell == null) {
+            // 할당 된 스펠 없음
+            return;
+        }
+        int computedRequireMana = spell.getComputedRequireMana();
+        if(this.mana > computedRequireMana) {
+            // 마나 부족
+            return;
+        }
+        this.mutateMana(-computedRequireMana, ManaMutateCause.USE, this);
+        spell.cast();
+    }
+
+    @Override
+    public void castingSpellCommand(CastingCommandCode castingCommand) {
+        this.castingCommand.attachCastingCommandCode(castingCommand);
     }
 
 }
