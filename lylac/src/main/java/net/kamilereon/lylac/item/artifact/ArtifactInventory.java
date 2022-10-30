@@ -61,7 +61,7 @@ public class ArtifactInventory {
      * @see ArtifactStat
      * @see Artifact
      */
-    public void computeAllArtifactStatsAndUpdateToInventoryHoldersStat() {
+    public ArtifactStat combineAllArtifactStats() {
 
         /**
          * 보유한 모든 아티팩트들의 스탯을 합하는 부분
@@ -101,26 +101,6 @@ public class ArtifactInventory {
             }
         }
 
-        /*
-         * 플레이어 스탯에 적용하는 부분
-         */
-
-        for(Field field : fields) {
-            try {
-                field.setAccessible(true);
-                String K = field.getName();
-                // 아티팩트 스탯의 합 + 해당 능력치의 기본 값
-                int V = (int) field.get(combinedArtifactStat) + EntityStats.valueOf(K).getDefaultValue();
-                Field holdersField = inventoryHolder.getClass().getDeclaredField(K);
-                holdersField.setAccessible(true);
-                // 값 반영
-                holdersField.setInt(inventoryHolder, V);
-                holdersField.setAccessible(false);
-                field.setAccessible(false);
-            }
-            catch(Exception e) {
-
-            }
-        }
+        return combinedArtifactStat;
     }
 }

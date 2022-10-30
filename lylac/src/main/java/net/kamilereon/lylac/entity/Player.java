@@ -1,5 +1,7 @@
 package net.kamilereon.lylac.entity;
 
+import java.lang.reflect.Field;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -10,11 +12,17 @@ import net.kamilereon.lylac.Utils;
 import net.kamilereon.lylac.element.ElementDamage;
 import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
+import net.kamilereon.lylac.event.Cause.ManaMutateCause;
 import net.kamilereon.lylac.event.player.LylacPlayerDamageByEntityEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
+import net.kamilereon.lylac.event.player.LylacPlayerManaMutateEvent;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
+import net.kamilereon.lylac.item.artifact.ArtifactStat;
 import net.kamilereon.lylac.item.artifact.Sceptor;
+import net.kamilereon.lylac.quest.LylacQuest.LylacQuestList;
 import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
+import net.kamilereon.lylac.permission.LylacPlayerPermission;
+import net.kamilereon.lylac.permission.LylacPlayerPermission.LylacPlayerPermissionType;
 import net.kamilereon.lylac.spell.CastingCommand;
 import net.kamilereon.lylac.spell.Spell;
 import net.kamilereon.lylac.spell.SpellInventory;
@@ -26,7 +34,7 @@ import net.kamilereon.lylac.spell.SpellTechInventory;
  * @author kamilereon
  * @version 1.0.0
  */
-public class Player extends Entity implements Damageable {
+public class Player extends Entity implements IPlayer, Damageable, ManaControllable {
 
     private final org.bukkit.entity.Player bukkitEntity;
     /**
@@ -48,6 +56,10 @@ public class Player extends Entity implements Damageable {
      * @see CastingCommand
      */
     private final SpellInventory spellInventory = new SpellInventory(this);
+
+    private final CastingCommand castingCommand = new CastingCommand(this);
+
+    private final LylacPlayerPermission permission = new LylacPlayerPermission();
 
     protected int maxHealth;
     protected int health = maxHealth;
@@ -87,47 +99,6 @@ public class Player extends Entity implements Damageable {
         this.init();
     }
 
-    /**
-     * 플레이어가 착용한 아티팩트가 바뀌면 자동으로 호출되는 메서드
-     * 
-     * @see ArtifactInventory#computeAllArtifactStatsAndUpdateToInventoryHoldersStat()
-     */
-    public void callWhenArtifactChanges() {
-        artifactInventory.computeAllArtifactStatsAndUpdateToInventoryHoldersStat();
-        callWhenElementDamageShouldChange();
-    }
-
-    /**
-     * 아티팩트 또는 관련 장비의 변화로 인해 능력치가 바뀐 경우 실행되는 메서드
-     * <p>메서드가 실행되면 해당 능력치를 기준으로 {@link Player#currentElementDamage}를 재계산 함</p>
-     */
-    public void callWhenElementDamageShouldChange() {
-
-        Sceptor sceptor = (Sceptor) artifactInventory.getArtifact(ArtifactType.SCEPTOR);
-        // 만약 현재 가지고 있는 셉터가 없다면 객체 초기화
-        if(sceptor == null) {
-            this.currentElementDamage = ElementDamageRange.getElementDamageRange();
-            return;
-        }
-        // 가지고 있다면 객체 복사 후
-        // 능력치에 따라 속성 데미지 계산!
-        ElementDamageRange sceptorElementDamage = sceptor.getElementDamage().clone();
-
-        double computedSpellAmp = Util.getValueToRate(spellAmplificationRate);
-        double computedEarthAmp = Util.getValueToRate(earthAmplificationRate);
-        double computedWaterAmp = Util.getValueToRate(waterAmplificationRate);
-        double computedFireAmp = Util.getValueToRate(fireAmplificationRate);
-        double computedAirAmp = Util.getValueToRate(airAmplificationRate);
-
-        sceptorElementDamage.getEarth().multiply(computedSpellAmp + computedEarthAmp);
-        sceptorElementDamage.getWater().multiply(computedSpellAmp + computedWaterAmp);
-        sceptorElementDamage.getFire().multiply(computedSpellAmp + computedFireAmp);
-        sceptorElementDamage.getAir().multiply(computedSpellAmp + computedAirAmp);
-        sceptorElementDamage.getNeutral().multiply(computedSpellAmp);
-
-        this.currentElementDamage = sceptorElementDamage;
-    }
-
     public void update() {
 
     }
@@ -159,6 +130,22 @@ public class Player extends Entity implements Damageable {
         this.bukkitTaskEvery10Ticks.cancel();
         this.bukkitTaskEverySecond.cancel();
     }
+    
+    @Override
+    public <T2 extends Entity & Damageable> void attack(T2 to) {
+        to.attackedBy(currentElementDamage, this);
+    }
+
+    @Override
+    public void kill() {
+        // 사망이벤트 발생시키기
+        // 사망시 실행되는 로직들...
+        /**
+         * 
+         * 
+         */
+        // 사망시 즉시 리스폰
+    }
 
     @Override
     public <T2 extends Entity> void attackedBy(ElementDamageRange eDamage, T2 by) {
@@ -178,11 +165,6 @@ public class Player extends Entity implements Damageable {
     }
 
     @Override
-    public <T2 extends Entity & Damageable> void attack(T2 to) {
-        to.attackedBy(currentElementDamage, this);
-    }
-
-    @Override
     public <T2 extends Entity> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by) {
         LylacPlayerHealthMutateEvent<T2> event = new LylacPlayerHealthMutateEvent<>(this, by, mutateValue, cause);
         Utils.Event.callEvent(event);
@@ -193,39 +175,135 @@ public class Player extends Entity implements Damageable {
             this.kill();
         }
         // 버킷 플레이어에 체력 반영시키기
-        
     }
-
+    
     @Override
-    public void kill() {
-        // 사망이벤트 발생시키기
-        // 사망시 실행되는 로직들...
-        /**
-         * 
-         * 
-         */
-        // 사망시 즉시 리스폰
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     @Override
     public int getHealth() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.health;
     }
 
+    @Override
+    public <T2 extends Entity> void mutateMana(int mutateValue, ManaMutateCause cause, T2 by) {
+        LylacPlayerManaMutateEvent<T2> event = new LylacPlayerManaMutateEvent<>(this, by, mutateValue, cause);
+        Utils.Event.callEvent(event);
+
+        if(event.isCancelled()) return;
+
+        int nextMana = this.mana + mutateValue;
+        if(nextMana > maxMana) this.mana = maxMana;
+        else if(nextMana <= maxMana && nextMana >= 0) this.mana = nextMana;
+        else this.mana = 0 ;
+    }
+
+    @Override
+    public int setMana(int mana) {
+        return this.mana = mana;
+    }
+
+    @Override
     public int getMana() {
         return this.mana;
     }
 
+    @Override
     public org.bukkit.entity.Player getBukkitEntity() {
         return this.bukkitEntity;
     }
 
+    @Override
     public ArtifactInventory getArtifactInventory() { return this.artifactInventory; }
 
-    public void showStatusAsActionBar() {
-        Utils.Chat.sendActionBar(bukkitEntity, "");
+    @Override
+    public SpellInventory getSpellInventory() {
+        return this.spellInventory;
     }
 
+    @Override
+    public SpellTechInventory getSpellTechInventory() {
+        return this.spellTechInventory;
+    }
+
+    @Override
+    public LylacPlayerPermission getPermission() { return this.permission; }
+
+    @Override
+    public void computeAllArtifactStatsAndUpdate() {
+        ArtifactStat combinedArtifactStat = artifactInventory.combineAllArtifactStats();
+        Field[] fields = ArtifactStat.class.getDeclaredFields();
+        for(Field field : fields) {
+            try {
+                field.setAccessible(true);
+                String K = field.getName();
+                // 아티팩트 스탯의 합 + 해당 능력치의 기본 값
+                int V = (int) field.get(combinedArtifactStat) + EntityStats.valueOf(K).getDefaultValue();
+                Field holdersField = this.getClass().getDeclaredField(K);
+                holdersField.setAccessible(true);
+                // 값 반영
+                holdersField.setInt(this, V);
+                holdersField.setAccessible(false);
+                field.setAccessible(false);
+            }
+            catch(Exception e) {
+
+            }
+        }
+    }
+
+    @Override
+    public void computeElementDamageRangeAndUpdate() {
+        Sceptor sceptor = (Sceptor) artifactInventory.getArtifact(ArtifactType.SCEPTOR);
+        // 만약 현재 가지고 있는 셉터가 없다면 객체 초기화
+        if(sceptor == null) {
+            this.currentElementDamage = ElementDamageRange.getElementDamageRange();
+            return;
+        }
+        // 가지고 있다면 객체 복사 후
+        // 능력치에 따라 속성 데미지 계산!
+        ElementDamageRange sceptorElementDamage = sceptor.getElementDamage().clone();
+
+        double computedSpellAmp = Util.getValueToRate(spellAmplificationRate);
+        double computedEarthAmp = Util.getValueToRate(earthAmplificationRate);
+        double computedWaterAmp = Util.getValueToRate(waterAmplificationRate);
+        double computedFireAmp = Util.getValueToRate(fireAmplificationRate);
+        double computedAirAmp = Util.getValueToRate(airAmplificationRate);
+
+        sceptorElementDamage.getEarth().multiply(computedSpellAmp + computedEarthAmp);
+        sceptorElementDamage.getWater().multiply(computedSpellAmp + computedWaterAmp);
+        sceptorElementDamage.getFire().multiply(computedSpellAmp + computedFireAmp);
+        sceptorElementDamage.getAir().multiply(computedSpellAmp + computedAirAmp);
+        sceptorElementDamage.getNeutral().multiply(computedSpellAmp);
+
+        this.currentElementDamage = sceptorElementDamage;
+    }
+
+    @Override
+    public void startQuest(LylacQuestList quest) {
+        if(permission.checkPermission(this, LylacPlayerPermissionType.QUEST_START, "퀘스트를 시작할 수 없습니다")) {
+
+        }
+    }
+
+    @Override
+    public void progressQuest(LylacQuestList quest) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void completeQuest(LylacQuestList quest) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void castSpell(int spellInventoryPosition) {
+        // TODO Auto-generated method stub
+        
+    }
 
 }

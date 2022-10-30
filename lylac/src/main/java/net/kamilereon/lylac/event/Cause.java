@@ -17,4 +17,19 @@ public class Cause {
         MELEE,
         UNKNOWN
     }
+
+    /**
+     * 마나가 변하게 된 원인
+     * 
+     * <p>{@link ManaMutateCause#NAUTRAL} 자연 회복</p>
+     * <p>{@link ManaMutateCause#USE} 마나를 스펠 캐스팅 할 때 사용할 때</p>
+     * <p>{@link ManaMutateCause#SPELL} 스펠 효과를 인하여 마나가 변화할 때</p>
+     * <p>{@link ManaMutateCause#UNKNOWN} 명시한 원인 외의 다른 것</p>
+     */
+    public enum ManaMutateCause {
+        NAUTRAL,
+        USE,
+        SPELL,
+        UNKNOWN
+    }
 }

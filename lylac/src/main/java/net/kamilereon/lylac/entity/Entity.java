@@ -2,14 +2,8 @@ package net.kamilereon.lylac.entity;
 
 import java.lang.reflect.Field;
 
-import org.bukkit.entity.LivingEntity;
-
-import net.kamilereon.lylac.Utils;
 import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.element.ElementDamageRange.Range;
-import net.kamilereon.lylac.event.Cause.HealthMutateCause;
-import net.kamilereon.lylac.event.entity.LylacEntityHealthMutateEvent;
-import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
 
 
 /**
@@ -22,6 +16,7 @@ public abstract class Entity {
 
     public static final int RATE_DEFAULT = 100;
 
+    protected int level = 0;
     protected ElementDamageRange currentElementDamage = ElementDamageRange.getElementDamageRange().setNeutral(Range.set(10, 10));
 
     public Entity() {
@@ -57,6 +52,14 @@ public abstract class Entity {
      * 해당 엔티티의 체력이 0이하 이거나 특별한 원인으로 인해 사망할때 실행되는 메서드
      */
     public abstract void kill();
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getLevel() {
+        return this.level; 
+    }
 
     /**
      * 엔티티의 스탯을 설정하게 해주는 setter 메서드
