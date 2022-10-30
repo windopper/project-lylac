@@ -2,6 +2,7 @@ package net.kamilereon.lylac.entity;
 
 import org.bukkit.entity.Player;
 
+import net.kamilereon.lylac.event.Cause.XpMutateCause;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 import net.kamilereon.lylac.item.artifact.ArtifactStat;
 import net.kamilereon.lylac.permission.LylacPlayerPermission;

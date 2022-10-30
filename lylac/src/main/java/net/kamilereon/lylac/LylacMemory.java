@@ -14,19 +14,19 @@ public class LylacMemory {
     private final static Object LOCK_PLAYER = new Object();
     private final static Object LOCK_ENTITIES = new Object();
 
-    public void registerLylacPlayer(org.bukkit.entity.Player player) {
+    public static void registerLylacPlayer(org.bukkit.entity.Player player) {
         synchronized(LOCK_PLAYER) {
             PLAYERS.put(player, new Player(player));
         }
     }
 
-    public Player getLylacPlayer(org.bukkit.entity.Player player) {
+    public static Player getLylacPlayer(org.bukkit.entity.Player player) {
         synchronized(LOCK_PLAYER) {
             return PLAYERS.get(player);
         }   
     }
 
-    public void unregisterLylacPlayer(org.bukkit.entity.Player player) {
+    public static void unregisterLylacPlayer(org.bukkit.entity.Player player) {
         synchronized(LOCK_PLAYER) {
             PLAYERS.remove(player);
         }
