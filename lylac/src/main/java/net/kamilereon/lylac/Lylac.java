@@ -2,6 +2,7 @@ package net.kamilereon.lylac;
 
 import java.util.EventListener;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 

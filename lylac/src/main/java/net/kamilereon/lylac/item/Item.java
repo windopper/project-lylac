@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+
+import net.kamilereon.lylac.Lylac;
 
 public class Item {
 
@@ -57,6 +61,7 @@ public class Item {
         itemMeta.setDisplayName(this.name);
         itemMeta.setLore(this.lore);
         itemMeta.setCustomModelData(this.customModelData);
+        ItemUtil.setValueToPersistentDataContainer(itemMeta, "uuid", UUIDTagType.UUID, uuid);
         item.setItemMeta(itemMeta);
         return item;
     }
@@ -67,4 +72,18 @@ public class Item {
         QUEST,
     }
 
+    public static class ItemUtil {
+        public static UUID getUUIDFromItemPersistentDataContainer(ItemMeta itemMeta) {
+            return itemMeta.getPersistentDataContainer().get(NamespacedKey.fromString("uuid", Lylac.lylacPlugin), UUIDTagType.UUID);
+        }
+        public static <T, Z> boolean checkValueFromPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType) {
+            return itemMeta.getPersistentDataContainer().has(NamespacedKey.fromString(key, Lylac.lylacPlugin), persistentDataType);
+        }
+        public static <T, Z> void setValueToPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType, Z value) {
+            itemMeta.getPersistentDataContainer().set(NamespacedKey.fromString(key, Lylac.lylacPlugin), persistentDataType, value);
+        } 
+        public static <T, Z> Z getValueFromPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType) {
+            return itemMeta.getPersistentDataContainer().get(NamespacedKey.fromString(key, Lylac.lylacPlugin), persistentDataType);
+        }
+    }
 }

@@ -105,20 +105,23 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     @Override
     public void init() {
 
+        // 플레이어 데이터 불러오기
+        
+
         // 플레이어 초기 설정
         this.bukkitEntity.setMaximumNoDamageTicks(0);
 
+        // 초기 능력치 계산 및 적용
+
         this.bukkitTaskEveryTick = Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
             update();
-            // 플레이어 액션바 전시 스케줄러
+            // 플레이어 액션바 전시 스케줄러`
             // 보스바 전시 스케줄러
         });
         this.bukkitTaskEverySecond = Utils.Scheduler.executeContinuallyEveryTick(() -> {
             // 마나 초당 회복 스케쥴러
             // 체력 초당 회복 스케줄러
         }, 20);
-
-        // 초기 능력치 계산 및 적용
     }
 
     @Override
