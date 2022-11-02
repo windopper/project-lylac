@@ -322,4 +322,15 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
         this.castingCommand.attachCastingCommandCode(castingCommand);
     }
 
+    @Override
+    public void loadData() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void saveData() {
+        // TODO Auto-generated method stub
+        
+    }
 }
