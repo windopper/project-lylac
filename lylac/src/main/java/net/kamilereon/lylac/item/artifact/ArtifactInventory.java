@@ -1,11 +1,20 @@
 package net.kamilereon.lylac.item.artifact;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import net.kamilereon.lylac.entity.Player;
 import net.kamilereon.lylac.entity.Entity.EntityStats;
+import net.kamilereon.lylac.item.ItemUtil;
+import net.kamilereon.lylac.item.ItemUtil.GeneratedItemModelField;
 import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
 
 /**
@@ -28,7 +37,7 @@ public class ArtifactInventory {
      * @see #setArtifact(ArtifactType, Artifact)
      * @see #getArtifact(ArtifactType)
      */
-    private final Map<ArtifactType, Artifact> artifacts = new HashMap<ArtifactType, Artifact>() {{
+    private final Map<ArtifactType, ItemStack> artifacts = new HashMap<ArtifactType, ItemStack>() {{
         put(ArtifactType.HELMET, null);
         put(ArtifactType.CHESTPLATE, null);
         put(ArtifactType.LEGGINGS, null);
@@ -45,11 +54,11 @@ public class ArtifactInventory {
         this.inventoryHolder = player;
     }
 
-    public void setArtifact(ArtifactType artifactType, Artifact artifact) {
+    public void setArtifact(ArtifactType artifactType, ItemStack artifact) {
         artifacts.replace(artifactType, artifact);
     }
 
-    public Artifact getArtifact(ArtifactType artifactType) {
+    public ItemStack getArtifact(ArtifactType artifactType) {
         return artifacts.get(artifactType);
     }
 
@@ -61,46 +70,33 @@ public class ArtifactInventory {
      * @see ArtifactStat
      * @see Artifact
      */
-    public ArtifactStat combineAllArtifactStats() {
+    public Map<GeneratedItemModelField, Integer> combineAllArtifactStats() {
 
         /**
          * 보유한 모든 아티팩트들의 스탯을 합하는 부분
          */
+        Map<GeneratedItemModelField, Integer> combinedStat = new HashMap<>();
+        List<GeneratedItemModelField> fields = ItemUtil.GeneratedItemModelField.getStatsField();
 
-        ArtifactStat combinedArtifactStat = ArtifactStat.builder(); 
-        Field[] fields = ArtifactStat.class.getDeclaredFields();
-        // 모든 artifacts에 대하여 null 값을 제외한 나머지 값들을 getArtifactStat() 함수를 이용하여 ArtifactStat 객체로 반환
+        // 값 초기화
+        for(GeneratedItemModelField field : fields) {
+            combinedStat.put(field, 0);
+        }
 
-        ArtifactStat[] artifactStats = artifacts.values()
-            .stream()
-            .filter(artifact -> artifact != null) // null 값 제외
-            .map(Artifact::getArtifactStat)
-            .toArray(ArtifactStat[]::new); // 어레이로 변환
-        
-        // artifactStats 객체를 순회하며 대응하는 모든 필드의 값을 combined에 가산
-        for(ArtifactStat artifactStat : artifactStats) {
-            for(Field field : fields) {
-                try {
-                    // 필드 접근자가 private 이므로 접근 제한 풀기
-                    field.setAccessible(true);
-                    // 필드 이름
-                    String K = field.getName();
-                    // 필드 값
-                    int V = (int) field.get(artifactStat);
-                    // 대응하는 필드 꺼내기
-                    Field combinedField = ArtifactStat.class.getDeclaredField(K);
-                    combinedField.setAccessible(true);
-                    // 대응하는 필드에 값 가산
-                    combinedField.set(combinedArtifactStat, (int) combinedField.get(combinedArtifactStat) + V);
-                    // 필드 잠그기
-                    field.setAccessible(false);
-                }
-                catch(Exception e) {
 
-                }
+        // 아티팩트들을 순회하며 combinedStat 에 값 계산
+        for(ItemStack itemStack : artifacts.values()) {
+            // 아티팩트가 장착되어 있지 않다면 건너뛰기
+            if(itemStack == null) continue;
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            for(GeneratedItemModelField field : fields) {
+                int value = ItemUtil.getValueFromPersistentDataContainer(itemMeta, field.name(), PersistentDataType.INTEGER);
+                // 값이 없다면 건너뛰기
+                if(value == 0) continue;
+                combinedStat.replace(field, combinedStat.get(field) + value);
             }
         }
 
-        return combinedArtifactStat;
+        return combinedStat;
     }
 }

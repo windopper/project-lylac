@@ -41,11 +41,6 @@ public class ArtifactStat {
     private int airResistance = 0;
     private int earthResistance = 0;
 
-    private int spellAmplificationRate = 0;
-    private int waterAmplificationRate = 0;
-    private int fireAmplificationRate = 0;
-    private int airAmplificationRate = 0;
-    private int earthAmplificationRate = 0;
 
     public static ArtifactStat builder() {
         return new ArtifactStat();

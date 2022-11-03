@@ -234,6 +234,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void computeAllArtifactStatsAndUpdate() {
+        /*
         ArtifactStat combinedArtifactStat = artifactInventory.combineAllArtifactStats();
         Field[] fields = ArtifactStat.class.getDeclaredFields();
         for(Field field : fields) {
@@ -253,6 +254,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
             }
         }
+        */
     }
 
     @Override

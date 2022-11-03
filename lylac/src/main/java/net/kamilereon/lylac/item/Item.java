@@ -61,7 +61,6 @@ public class Item {
         itemMeta.setDisplayName(this.name);
         itemMeta.setLore(this.lore);
         itemMeta.setCustomModelData(this.customModelData);
-        ItemUtil.setValueToPersistentDataContainer(itemMeta, "uuid", UUIDTagType.UUID, uuid);
         item.setItemMeta(itemMeta);
         return item;
     }

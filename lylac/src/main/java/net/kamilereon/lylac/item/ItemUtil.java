@@ -1,5 +1,7 @@
 package net.kamilereon.lylac.item;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Material;
@@ -13,18 +15,19 @@ import com.google.gson.JsonObject;
 import net.kamilereon.lylac.Lylac;
 
 public class ItemUtil {
-    private static UUID getUUIDFromItemPersistentDataContainer(ItemMeta itemMeta) {
+    public static UUID getUUIDFromItemPersistentDataContainer(ItemMeta itemMeta) {
         return itemMeta.getPersistentDataContainer().get(NamespacedKey.fromString("uuid", Lylac.lylacPlugin), UUIDTagType.UUID);
     }
-    private static <T, Z> boolean checkValueFromPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType) {
+    public static <T, Z> boolean checkValueFromPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType) {
         return itemMeta.getPersistentDataContainer().has(NamespacedKey.fromString(key, Lylac.lylacPlugin), persistentDataType);
     }
-    private static <T, Z> void setValueToPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType, Z value) {
+    public static <T, Z> void setValueToPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType, Z value) {
         itemMeta.getPersistentDataContainer().set(NamespacedKey.fromString(key, Lylac.lylacPlugin), persistentDataType, value);
     } 
-    private static <T, Z> Z getValueFromPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType) {
+    public static <T, Z> Z getValueFromPersistentDataContainer(ItemMeta itemMeta, String key, PersistentDataType<T, Z> persistentDataType) {
         return itemMeta.getPersistentDataContainer().get(NamespacedKey.fromString(key, Lylac.lylacPlugin), persistentDataType);
     }
+
     /**
      * JSON 형식의 아이템 정보를 라일락 템플릿에 맞는 마인크래프트 아이템으로 바꿈
      * 
@@ -58,27 +61,47 @@ public class ItemUtil {
         name(PersistentDataType.STRING),
         createdAt(PersistentDataType.STRING),
         createdBy(PersistentDataType.STRING),
-        maxMana(PersistentDataType.INTEGER),
-        maxManaIncRate(PersistentDataType.INTEGER),
-        manaRegenRate(PersistentDataType.INTEGER),
-        manaConsumptionRate(PersistentDataType.INTEGER),
-        maxHealth(PersistentDataType.INTEGER),
-        maxHealthIncRate(PersistentDataType.INTEGER),
-        healthRegenRate(PersistentDataType.INTEGER),
-        spellCastingSpeed(PersistentDataType.INTEGER),
-        speedWhileSpellCasting(PersistentDataType.INTEGER),
-        spellResistance(PersistentDataType.INTEGER),
-        spellAmplificationRate(PersistentDataType.INTEGER);
+        maxMana(PersistentDataType.INTEGER, true),
+        maxManaIncRate(PersistentDataType.INTEGER, true),
+        manaRegenRate(PersistentDataType.INTEGER, true),
+        manaConsumptionRate(PersistentDataType.INTEGER, true),
+        maxHealth(PersistentDataType.INTEGER, true),
+        maxHealthIncRate(PersistentDataType.INTEGER, true),
+        healthRegenRate(PersistentDataType.INTEGER, true),
+        spellCastingSpeed(PersistentDataType.INTEGER, true),
+        speedWhileSpellCasting(PersistentDataType.INTEGER, true),
+        spellResistance(PersistentDataType.INTEGER, true),
+        spellAmplificationRate(PersistentDataType.INTEGER, true);
 
         PersistentDataType type;
+        // 스탯 계산 될 때 사용하는 필드인지?
+        boolean shouldComputedAsStat = false;
 
         GeneratedItemModelField(PersistentDataType type) {
             this.type = type;
         }
 
+        GeneratedItemModelField(PersistentDataType type, boolean shouldComputedAsStat) {
+            this.type = type;
+            this.shouldComputedAsStat = shouldComputedAsStat;
+        }
+
         PersistentDataType getType() { return this.type; }
 
         Class getPrimitiveType() { return this.type.getPrimitiveType(); }
+
+        /**
+         * 플레이어 능력치를 계산할 때 실질적으로 필요한 스탯들 가져오기
+         * @return GeneratedItemModelField을 멤버로 가지는 리스트 반환
+         */
+        public static List<GeneratedItemModelField> getStatsField() {
+            List<GeneratedItemModelField> list = new ArrayList<>();
+            for(GeneratedItemModelField field : GeneratedItemModelField.values()) {
+                if(!field.shouldComputedAsStat) continue;
+                list.add(field);
+            }
+            return list;
+        }
     }
 
     public enum RootItemModelField {
