@@ -4,7 +4,6 @@ import org.bukkit.entity.Player;
 
 import net.kamilereon.lylac.event.Cause.XpMutateCause;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
-import net.kamilereon.lylac.item.artifact.ArtifactStat;
 import net.kamilereon.lylac.permission.LylacPlayerPermission;
 import net.kamilereon.lylac.permission.LylacPlayerPermission.LylacPlayerPermissionType;
 import net.kamilereon.lylac.quest.LylacQuest.LylacQuestList;
@@ -30,7 +29,6 @@ public interface IPlayer {
      * <p>주로 플레이어가 가진 아티팩트에 변화가 일어날 때 실행된다.</p>
      *  
      * @see ArtifactInventory
-     * @see ArtifactStat
      */
     public void computeAllArtifactStatsAndUpdate();
 

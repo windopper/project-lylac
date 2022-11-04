@@ -27,6 +27,17 @@ public class ElementDamageRange implements Cloneable {
     }
 
     /**
+     * 스트링을 <code>ELementDamageRange</code> 형식으로 리턴
+     * 
+     * @param val 형식 "최소-최대"
+     * @return ElementDamageRange 범위를 리턴
+     */
+    public static ElementDamageRange parse(String val) {
+        String[] splited = val.split("-");
+        return getElementDamageRange().setNeutral(Range.set(Integer.parseInt(splited[0]), Integer.parseInt(splited[1])));
+    }
+
+    /**
      * {@link ElementDamageRange}의 객체를 복사하는 메서드
      */
     @Override

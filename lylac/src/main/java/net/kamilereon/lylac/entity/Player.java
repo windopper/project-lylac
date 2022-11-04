@@ -1,8 +1,13 @@
 package net.kamilereon.lylac.entity;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.kamilereon.lylac.Lylac;
@@ -15,10 +20,11 @@ import net.kamilereon.lylac.event.player.LylacPlayerDamageByEntityEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerManaMutateEvent;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
-import net.kamilereon.lylac.item.artifact.ArtifactStat;
-import net.kamilereon.lylac.item.artifact.Sceptor;
+import net.kamilereon.lylac.item.artifact.ArtifactInventory.ArtifactType;
+import net.kamilereon.lylac.particle.LylacParticle;
 import net.kamilereon.lylac.quest.LylacQuest.LylacQuestList;
-import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
+import net.kamilereon.lylac.item.ItemUtil;
+import net.kamilereon.lylac.item.LylacItem;
 import net.kamilereon.lylac.permission.LylacPlayerPermission;
 import net.kamilereon.lylac.permission.LylacPlayerPermission.LylacPlayerPermissionType;
 import net.kamilereon.lylac.spell.CastingCommand;
@@ -59,6 +65,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     private final CastingCommand castingCommand = new CastingCommand(this);
 
     private final LylacPlayerPermission permission = new LylacPlayerPermission();
+
+    private final LylacParticle particle = new LylacParticle(this);
 
     protected int maxHealth;
     protected int health = maxHealth;
@@ -234,32 +242,27 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void computeAllArtifactStatsAndUpdate() {
-        /*
-        ArtifactStat combinedArtifactStat = artifactInventory.combineAllArtifactStats();
-        Field[] fields = ArtifactStat.class.getDeclaredFields();
-        for(Field field : fields) {
+
+        Map<LylacItem.GeneratedItemModelField, Integer> combinedStats = artifactInventory.combineAllArtifactStats();
+
+        combinedStats.forEach((_K, _V) -> {
+            String K = _K.name();
+            int V = _V + EntityStats.valueOf(K).getDefaultValue();
             try {
-                field.setAccessible(true);
-                String K = field.getName();
-                // 아티팩트 스탯의 합 + 해당 능력치의 기본 값
-                int V = (int) field.get(combinedArtifactStat) + EntityStats.valueOf(K).getDefaultValue();
                 Field holdersField = this.getClass().getDeclaredField(K);
                 holdersField.setAccessible(true);
-                // 값 반영
                 holdersField.setInt(this, V);
                 holdersField.setAccessible(false);
-                field.setAccessible(false);
             }
             catch(Exception e) {
 
             }
-        }
-        */
+        });
     }
 
     @Override
     public void computeElementDamageRangeAndUpdate() {
-        Sceptor sceptor = (Sceptor) artifactInventory.getArtifact(ArtifactType.SCEPTOR);
+        ItemStack sceptor = artifactInventory.getArtifact(ArtifactType.SCEPTOR);
         // 만약 현재 가지고 있는 셉터가 없다면 객체 초기화
         if(sceptor == null) {
             this.currentElementDamage = ElementDamageRange.getElementDamageRange();
@@ -267,7 +270,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
         }
         // 가지고 있다면 객체 복사 후
         // 능력치에 따라 속성 데미지 계산!
-        ElementDamageRange sceptorElementDamage = sceptor.getElementDamage().clone();
+        ElementDamageRange sceptorElementDamage = ElementDamageRange.parse(ItemUtil.getValueFromPersistentDataContainer(
+            sceptor.getItemMeta(), "damage", PersistentDataType.STRING));
 
         double computedSpellAmp = Util.getValueToRate(spellAmplificationRate);
         double computedEarthAmp = Util.getValueToRate(earthAmplificationRate);

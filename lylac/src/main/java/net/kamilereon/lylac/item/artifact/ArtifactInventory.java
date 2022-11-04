@@ -1,21 +1,15 @@
 package net.kamilereon.lylac.item.artifact;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
-
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import net.kamilereon.lylac.entity.Player;
-import net.kamilereon.lylac.entity.Entity.EntityStats;
 import net.kamilereon.lylac.item.ItemUtil;
-import net.kamilereon.lylac.item.ItemUtil.GeneratedItemModelField;
-import net.kamilereon.lylac.item.artifact.Artifact.ArtifactType;
+import net.kamilereon.lylac.item.LylacItem;
 
 /**
  * 아티팩트 인벤토리 클래스. 해당 클래스에서 플레이어의 아티팩트 착용 여부를 관리하고 
@@ -62,6 +56,10 @@ public class ArtifactInventory {
         return artifacts.get(artifactType);
     }
 
+    public void removeArtifact(ArtifactType artifactType) {
+        artifacts.replace(artifactType, null);
+    }
+
     /**
      * 보유한 모든 아티팩트들의 스탯을 합한 후, 해당 인벤토리 소유자의 스탯에 업데이트하는 메서드
      * <p>{@link Player#callWhenArtifactChanges()} 메서드에 의해서 자동으로 실행됨</p>
@@ -70,16 +68,16 @@ public class ArtifactInventory {
      * @see ArtifactStat
      * @see Artifact
      */
-    public Map<GeneratedItemModelField, Integer> combineAllArtifactStats() {
+    public Map<LylacItem.GeneratedItemModelField, Integer> combineAllArtifactStats() {
 
         /**
          * 보유한 모든 아티팩트들의 스탯을 합하는 부분
          */
-        Map<GeneratedItemModelField, Integer> combinedStat = new HashMap<>();
-        List<GeneratedItemModelField> fields = ItemUtil.GeneratedItemModelField.getStatsField();
+        Map<LylacItem.GeneratedItemModelField, Integer> combinedStat = new HashMap<>();
+        List<LylacItem.GeneratedItemModelField> fields = LylacItem.GeneratedItemModelField.getStatsField();
 
         // 값 초기화
-        for(GeneratedItemModelField field : fields) {
+        for(LylacItem.GeneratedItemModelField field : fields) {
             combinedStat.put(field, 0);
         }
 
@@ -89,7 +87,7 @@ public class ArtifactInventory {
             // 아티팩트가 장착되어 있지 않다면 건너뛰기
             if(itemStack == null) continue;
             ItemMeta itemMeta = itemStack.getItemMeta();
-            for(GeneratedItemModelField field : fields) {
+            for(LylacItem.GeneratedItemModelField field : fields) {
                 int value = ItemUtil.getValueFromPersistentDataContainer(itemMeta, field.name(), PersistentDataType.INTEGER);
                 // 값이 없다면 건너뛰기
                 if(value == 0) continue;
@@ -98,5 +96,17 @@ public class ArtifactInventory {
         }
 
         return combinedStat;
+    }
+
+    public enum ArtifactType {
+        HELMET,
+        CHESTPLATE,
+        LEGGINGS,
+        BOOTS,
+        NECKLACE,
+        EARING,
+        RING1,
+        RING2,
+        SCEPTOR,
     }
 }

@@ -17,6 +17,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 import net.kamilereon.lylac.LylacMemory;
 import net.kamilereon.lylac.event.player.ArmorEquipEvent;
+import net.kamilereon.lylac.event.player.ArmorEquipEvent.ArmorType;
+import net.kamilereon.lylac.event.player.ArmorEquipEvent.EquipMethod;
 
 public class PlayerEventListener implements Listener {
 
@@ -41,7 +43,9 @@ public class PlayerEventListener implements Listener {
 
     @EventHandler
     public void PlayerArmorEquipEvent(ArmorEquipEvent event) {
-
+        
+        Player player = event.getPlayer();
+        net.kamilereon.lylac.entity.Player lylacPlayer = LylacMemory.getLylacPlayer(player);
     }
     
     @EventHandler
