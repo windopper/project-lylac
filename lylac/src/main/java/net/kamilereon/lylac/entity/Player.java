@@ -308,7 +308,6 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     @Override
     public void loadData() {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
