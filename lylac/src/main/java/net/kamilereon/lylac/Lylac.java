@@ -15,8 +15,8 @@ public class Lylac extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Utils.Event.registerEvent(new ArmorListener(getConfig().getStringList("blocked")));
-        Utils.Event.registerEvent(new PlayerEventListener());
+        LylacUtils.Event.registerEvent(new ArmorListener(getConfig().getStringList("blocked")));
+        LylacUtils.Event.registerEvent(new PlayerEventListener());
     }
     @Override
     public void onDisable() {

@@ -7,7 +7,7 @@ import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
 
 /**
- * {@link Entity} 가 체력이 있고 피해를 받을 수 있음
+ * 체력이 있고 피해를 받을 수 있는 엔티티들을 대표하는 클래스
  */
 public interface Damageable {
     /**
@@ -34,6 +34,8 @@ public interface Damageable {
     public <T2 extends Entity> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by);
 
     public void setHealth(int health);
+
+    public int getMaxHealth();
 
     public int getHealth();
 }

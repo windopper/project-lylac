@@ -27,7 +27,22 @@ public class SpellInventory {
      * @return 스펠 리턴
      */
     public Spell getSpell(int spellInventoryPosition) {
-        if(spellInventoryPosition >= 0 && spellInventoryPosition < 8) return null;
+        if(!isValidSpellPosition(spellInventoryPosition)) return null;
         return registeredSpells[spellInventoryPosition];
+    }
+
+    /**
+     * 해당 인벤토리 위치에 스펠을 장착한다.
+     * @param spellInventoryPosition 장착할 스펠의 위치 (범위 0 ~ 7)
+     * @param spell 장착할 스펠
+     */
+    public void setSpell(int spellInventoryPosition, Spell spell) {
+        if(!isValidSpellPosition(spellInventoryPosition)) return;
+        this.registeredSpells[spellInventoryPosition] = spell;
+    }
+
+    private boolean isValidSpellPosition(int spellPosition) {
+        if(spellPosition >= 0 && spellPosition < 8) return true;
+        return false;
     }
 }

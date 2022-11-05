@@ -9,7 +9,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
-public class Utils {
+public class LylacUtils {
     public static class Chat {
         public static void sendActionBar(Player target, String text) {
             target.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(text));

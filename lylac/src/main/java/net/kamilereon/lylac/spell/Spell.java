@@ -1,10 +1,10 @@
 package net.kamilereon.lylac.spell;
 
-import net.kamilereon.lylac.Utils;
-import net.kamilereon.lylac.entity.Entity;
+import net.kamilereon.lylac.LylacUtils;
 import net.kamilereon.lylac.entity.Player;
-import net.kamilereon.lylac.entity.Entity.EntityStats;
 import net.kamilereon.lylac.event.Cause.ManaMutateCause;
+import net.kamilereon.lylac.stat.LylacPlayerStatContainer;
+import net.kamilereon.lylac.stat.LylacPlayerStatContainer.LylacPlayerStats;
 
 /**
  * 프로젝트: 라일락의 최상위 스펠 추상 클래스
@@ -39,11 +39,11 @@ public abstract class Spell {
     public void setRequireMana(int val) { this.requireMana = val; }
 
     protected int getComputedSpellCastingTime() {
-        return (int) Entity.Util.getValueToRate(caster.getStat(EntityStats.spellCastingSpeed)) * spellCastingTime;
+        return (int) LylacPlayerStatContainer.StatUtil.getValueToRate(caster.getStat(LylacPlayerStatContainer.LylacPlayerStats.spellCastingSpeed)) * spellCastingTime;
     }
 
     public int getComputedRequireMana() {
-        return (int) Entity.Util.getValueToRate(caster.getStat(EntityStats.manaConsumptionRate)) * requireMana;
+        return (int) LylacPlayerStatContainer.StatUtil.getValueToRate(caster.getStat(LylacPlayerStatContainer.LylacPlayerStats.manaConsumptionRate)) * requireMana;
     }
     
     /**
@@ -72,6 +72,6 @@ public abstract class Spell {
      */
     public void cast() {
         _pre();
-        Utils.Scheduler.executeAfterTick(() -> _emit(), getComputedSpellCastingTime());
+        LylacUtils.Scheduler.executeAfterTick(() -> _emit(), getComputedSpellCastingTime());
     }
 }

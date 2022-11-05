@@ -64,12 +64,12 @@ public interface IPlayer {
     public void completeQuest(LylacQuestList quest);
 
     /**
-     * 플레이어 데이터를 불러온다
+     * 플레이어 데이터를 DB로부터 불러온다
      */
     public void loadData();
 
     /**
-     * 플레이어 데이터를 저장한다.
+     * 플레이어 데이터를 DB에 저장한다.
      */
     public void saveData();
 

@@ -2,6 +2,8 @@ package net.kamilereon.lylac.entity;
 
 import net.kamilereon.lylac.event.Cause.ManaMutateCause;
 import net.kamilereon.lylac.spell.CastingCommand;
+import net.kamilereon.lylac.spell.Spell;
+import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 
 /**
@@ -24,6 +26,15 @@ public interface ManaControllable {
     public int setMana(int mana);
 
     public int getMana();
+
+    /**
+     * 스펠을 장착한다. 
+     * 
+     * @param position 장착할 스펠 위치
+     * @param spell 장착할 스펠
+     * @return 스펠을 장착한 후 현재 스펠인벤토리 반환
+     */
+    public SpellInventory equipSpell(int position, Spell spell);
 
     /**
      * 스펠을 시전한다.

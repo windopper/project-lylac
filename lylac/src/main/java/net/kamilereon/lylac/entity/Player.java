@@ -11,12 +11,13 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.kamilereon.lylac.Lylac;
-import net.kamilereon.lylac.Utils;
+import net.kamilereon.lylac.LylacUtils;
 import net.kamilereon.lylac.element.ElementDamage;
 import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
 import net.kamilereon.lylac.event.Cause.ManaMutateCause;
 import net.kamilereon.lylac.event.player.LylacPlayerDamageByEntityEvent;
+import net.kamilereon.lylac.event.player.LylacPlayerEquipSpellEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerHealthMutateEvent;
 import net.kamilereon.lylac.event.player.LylacPlayerManaMutateEvent;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
@@ -31,6 +32,8 @@ import net.kamilereon.lylac.spell.CastingCommand;
 import net.kamilereon.lylac.spell.Spell;
 import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.SpellTechInventory;
+import net.kamilereon.lylac.stat.LylacPlayerStatContainer;
+import net.kamilereon.lylac.stat.LylacPlayerStatContainer.LylacPlayerStats;
 import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 
 /**
@@ -68,33 +71,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     private final LylacParticle particle = new LylacParticle(this);
 
-    protected int maxHealth;
-    protected int health = maxHealth;
-    protected int maxHealthIncRate = RATE_DEFAULT;
-    protected int healthRegenRate = RATE_DEFAULT;
-    
-    protected int mana = 0;
-    protected int maxMana;
-    protected int maxManaIncRate = RATE_DEFAULT;
-    protected int manaRegenRate = RATE_DEFAULT;
-    protected int manaConsumptionRate = RATE_DEFAULT;
-    
-    protected int spellCastingSpeed = RATE_DEFAULT;
-    protected int speedWhileSpellCasting = RATE_DEFAULT;
-    
-    protected int spellAmplificationRate = RATE_DEFAULT;
-    protected int waterAmplificationRate = RATE_DEFAULT;
-    protected int fireAmplificationRate = RATE_DEFAULT;
-    protected int airAmplificationRate = RATE_DEFAULT;
-    protected int earthAmplificationRate = RATE_DEFAULT;
-    
-    protected int spellResistance = RATE_DEFAULT;
-    protected int meleeResistance = RATE_DEFAULT;
-    protected int waterResistance = RATE_DEFAULT;
-    protected int fireResistance = RATE_DEFAULT;
-    protected int airResistance = RATE_DEFAULT;
-    protected int earthResistacne = RATE_DEFAULT;
-    
+    private final LylacPlayerStatContainer stat = new LylacPlayerStatContainer(this);
+
     private BukkitTask bukkitTaskEveryTick;
     private BukkitTask bukkitTaskEvery5Ticks;
     private BukkitTask bukkitTaskEvery10Ticks;
@@ -126,7 +104,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
             // 플레이어 액션바 전시 스케줄러`
             // 보스바 전시 스케줄러
         });
-        this.bukkitTaskEverySecond = Utils.Scheduler.executeContinuallyEveryTick(() -> {
+        this.bukkitTaskEverySecond = LylacUtils.Scheduler.executeContinuallyEveryTick(() -> {
             // 마나 초당 회복 스케쥴러
             // 체력 초당 회복 스케줄러
         }, 20);
@@ -161,7 +139,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     public <T2 extends Entity> void attackedBy(ElementDamage eDamage, T2 by) {
         // 총 피해량 계산 후 체력에 적용 및 이벤트 발생
         LylacPlayerDamageByEntityEvent<T2> event = new LylacPlayerDamageByEntityEvent<T2>(this, by, eDamage);
-        Utils.Event.callEvent(event);
+        LylacUtils.Event.callEvent(event);
 
         if(event.isCancelled()) return; // 이벤트가 캔슬되었을 경우 mutateHealth 메서드 호출 막음
 
@@ -176,10 +154,10 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     @Override
     public <T2 extends Entity> void mutateHealth(int mutateValue, HealthMutateCause cause, T2 by) {
         LylacPlayerHealthMutateEvent<T2> event = new LylacPlayerHealthMutateEvent<>(this, by, mutateValue, cause);
-        Utils.Event.callEvent(event);
-        int nextHealth = this.health + mutateValue;
-        if(nextHealth > maxHealth) this.health = maxHealth;
-        else if(nextHealth <= maxHealth && nextHealth > 0) this.health = nextHealth;
+        LylacUtils.Event.callEvent(event);
+        int nextHealth = stat.health + mutateValue;
+        if(nextHealth > stat.maxHealth) stat.health = stat.maxHealth;
+        else if(nextHealth <= stat.maxHealth && nextHealth > 0) stat.health = nextHealth;
         else {
             this.kill();
         }
@@ -188,35 +166,40 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     
     @Override
     public void setHealth(int health) {
-        this.health = health;
+        stat.health = health;
+    }
+
+    @Override
+    public int getMaxHealth() {
+        return stat.maxHealth;
     }
 
     @Override
     public int getHealth() {
-        return this.health;
+        return stat.health;
     }
 
     @Override
     public <T2 extends Entity> void mutateMana(int mutateValue, ManaMutateCause cause, T2 by) {
         LylacPlayerManaMutateEvent<T2> event = new LylacPlayerManaMutateEvent<>(this, by, mutateValue, cause);
-        Utils.Event.callEvent(event);
+        LylacUtils.Event.callEvent(event);
 
         if(event.isCancelled()) return;
 
-        int nextMana = this.mana + mutateValue;
-        if(nextMana > maxMana) this.mana = maxMana;
-        else if(nextMana <= maxMana && nextMana >= 0) this.mana = nextMana;
-        else this.mana = 0 ;
+        int nextMana = stat.mana + mutateValue;
+        if(nextMana > stat.maxMana) stat.mana = stat.maxMana;
+        else if(nextMana <= stat.maxMana && nextMana >= 0) stat.mana = nextMana;
+        else stat.mana = 0 ;
     }
 
     @Override
     public int setMana(int mana) {
-        return this.mana = mana;
+        return stat.mana = mana;
     }
 
     @Override
     public int getMana() {
-        return this.mana;
+        return stat.mana;
     }
 
     @Override
@@ -247,16 +230,9 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
         combinedStats.forEach((_K, _V) -> {
             String K = _K.name();
-            int V = _V + EntityStats.valueOf(K).getDefaultValue();
-            try {
-                Field holdersField = this.getClass().getDeclaredField(K);
-                holdersField.setAccessible(true);
-                holdersField.setInt(this, V);
-                holdersField.setAccessible(false);
-            }
-            catch(Exception e) {
-
-            }
+            // 기본 스탯과 계산된 스탯 합산!
+            int V = _V + LylacPlayerStatContainer.LylacPlayerStats.valueOf(K).getDefaultValue();
+            stat.setStat(LylacPlayerStats.valueOf(K), V);
         });
     }
 
@@ -273,16 +249,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
         ElementDamageRange sceptorElementDamage = ElementDamageRange.parse(ItemUtil.getValueFromPersistentDataContainer(
             sceptor.getItemMeta(), "damage", PersistentDataType.STRING));
 
-        double computedSpellAmp = Util.getValueToRate(spellAmplificationRate);
-        double computedEarthAmp = Util.getValueToRate(earthAmplificationRate);
-        double computedWaterAmp = Util.getValueToRate(waterAmplificationRate);
-        double computedFireAmp = Util.getValueToRate(fireAmplificationRate);
-        double computedAirAmp = Util.getValueToRate(airAmplificationRate);
+        double computedSpellAmp = LylacPlayerStatContainer.StatUtil.getValueToRate(stat.spellAmplificationRate);
 
-        sceptorElementDamage.getEarth().multiply(computedSpellAmp + computedEarthAmp);
-        sceptorElementDamage.getWater().multiply(computedSpellAmp + computedWaterAmp);
-        sceptorElementDamage.getFire().multiply(computedSpellAmp + computedFireAmp);
-        sceptorElementDamage.getAir().multiply(computedSpellAmp + computedAirAmp);
         sceptorElementDamage.getNeutral().multiply(computedSpellAmp);
 
         this.currentElementDamage = sceptorElementDamage;
@@ -290,7 +258,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void startQuest(LylacQuestList quest) {
-        if(permission.checkPermission(this, LylacPlayerPermissionType.QUEST_START, "퀘스트를 시작할 수 없습니다")) {
+        if(permission.checkPermission(this, LylacPlayerPermissionType.LYLAC_QUEST_START, "퀘스트를 시작할 수 없습니다")) {
 
         }
     }
@@ -308,6 +276,15 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     }
 
     @Override
+    public SpellInventory equipSpell(int position, Spell spell) {
+        LylacPlayerEquipSpellEvent event = new LylacPlayerEquipSpellEvent(this, position, spell);
+        LylacUtils.Event.callEvent(event);
+        if(event.isCancelled()) return this.spellInventory;
+        this.spellInventory.setSpell(position, spell);
+        return this.spellInventory;
+    }
+
+    @Override
     public void castSpell(int spellInventoryPosition) {
         Spell spell = this.spellInventory.getSpell(spellInventoryPosition);
         if(spell == null) {
@@ -315,7 +292,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
             return;
         }
         int computedRequireMana = spell.getComputedRequireMana();
-        if(this.mana > computedRequireMana) {
+        if(stat.mana > computedRequireMana) {
             // 마나 부족
             return;
         }

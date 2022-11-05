@@ -9,9 +9,9 @@ import org.bukkit.persistence.PersistentDataType;
 
 /**
  * 주어진 데이터를 받아 라일락 아이템으로 만들어 주는 클래스
+ * <p>빌더 패턴으로 데이터를 받아 <code>build()</code> 메서드를 통해 <code>ItemStack</code>
+ *  형식으로 뱉어주는 클래스 </p>
  * 
- * @param name
- * @return
  */
 public class LylacItem {
 
@@ -38,12 +38,18 @@ public class LylacItem {
         return itemStack;
     }
 
+    /**
+     * RootItemModel를 기반으로 생성된 아이템의 필드
+     * <p><code>PersistentDataType.INTEGER</code>를 기반으로 하는 필드는 범위가 0-100 사이임.</p>
+     * <p>해당 필드들은 RootItemModel의 동일 이름의 필드 값으로 부터 값을 구해야 함</p>
+     */
     public enum GeneratedItemModelField {
     
         uuid(PersistentDataType.STRING),
         name(PersistentDataType.STRING),
         createdAt(PersistentDataType.STRING),
         createdBy(PersistentDataType.STRING),
+
         maxMana(PersistentDataType.INTEGER, true),
         maxManaIncRate(PersistentDataType.INTEGER, true),
         manaRegenRate(PersistentDataType.INTEGER, true),

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.element.ElementDamageRange.Range;
+import net.kamilereon.lylac.stat.LylacPlayerStatContainer;
 
 
 /**
@@ -13,8 +14,6 @@ import net.kamilereon.lylac.element.ElementDamageRange.Range;
  * @version 1.0.0
  */
 public abstract class Entity {
-
-    public static final int RATE_DEFAULT = 100;
 
     protected int level = 0;
     protected ElementDamageRange currentElementDamage = ElementDamageRange.getElementDamageRange().setNeutral(Range.set(10, 10));
@@ -68,7 +67,7 @@ public abstract class Entity {
      * @param value 설정하고자 하는 값
      * @return 해당 객체 반환
      */
-    public void setStat(EntityStats stats, int value) {
+    public void setStat(LylacPlayerStatContainer.LylacPlayerStats stats, int value) {
         try {
             Field field = this.getClass().getDeclaredField(stats.name());
             field.setAccessible(true);
@@ -87,7 +86,7 @@ public abstract class Entity {
      * @throws NoSuchFieldException 설정하고자 하는 스탯이 해당 필드에 존재하지 않을 때 발생하는 예외
      * @throws IllegalAccessException 필드 접근을 하지 못할 때 발생하는 예외.
      */
-    public int getStat(EntityStats stats) {
+    public int getStat(LylacPlayerStatContainer.LylacPlayerStats stats) {
         try {
             Field field = this.getClass().getDeclaredField(stats.name());
             field.setAccessible(true);
@@ -102,77 +101,5 @@ public abstract class Entity {
             e.printStackTrace();
         }
         return 0;
-    }
-
-    /**
-     * 라일락 엔티티가 가진 모든 능력치의 이름과 초기값을 저장한 enum 클래스
-     * 
-     * <p>{@link #getDefaultValue()}를 통하여 해당 능력치 이름의 초기값을 구할 수 있다.</p>
-     * <p>{@link #getMin()} 또는 {@link #getMax()}를 통하여 해당 능력치의 최소, 최댓값을 구할 수 있다.</p>
-     */
-    public enum EntityStats {
-
-        maxMana(100),
-        maxManaIncRate(RATE_DEFAULT),
-        manaRegenRate(RATE_DEFAULT),
-        manaConsumptionRate(RATE_DEFAULT, 10, 10000),
-        maxHealth(1000),
-        maxHealthIncRate(RATE_DEFAULT),
-        healthRegenRate(RATE_DEFAULT),
-        spellCastingSpeed(RATE_DEFAULT, 20, 10000),
-        speedWhileSpellCasting(RATE_DEFAULT),
-        spellResistance(RATE_DEFAULT),
-        meleeResistance(RATE_DEFAULT),
-        waterResistance(RATE_DEFAULT),
-        fireResistance(RATE_DEFAULT),
-        airResistance(RATE_DEFAULT),
-        earthResistacne(RATE_DEFAULT),
-        spellAmplificationRate(RATE_DEFAULT),
-        waterAmplificationRate(RATE_DEFAULT),
-        fireAmplificationRate(RATE_DEFAULT),
-        airAmplificationRate(RATE_DEFAULT),
-        earthAmplificationRate(RATE_DEFAULT);
-
-        private final int defaultValue;
-        private int min = 0;
-        private int max = 999999;
-
-        EntityStats(int defaultValue) {
-            this.defaultValue = defaultValue;
-        }
-
-        EntityStats(int defaultValue, int min, int max) {
-            this.defaultValue = defaultValue;
-            this.min = min;
-            this.max = max;
-        }
-
-        public int getDefaultValue() {
-            return this.defaultValue;
-        }
-
-        public int getMin() {
-            return this.min;
-        }
-
-        public int getMax() {
-            return this.max;
-        }
-    }
-
-    public static class Util {
-        /**
-         * 해당 능력치를 비율로 환산하여 실제 게임에 적용 될 수 있도록 해줌
-         * 
-         * @param value 최소값 0,
-         * @return value를 100으로 나눈 값으로 리턴
-         */
-        public static double getValueToRate(int value) {
-            return (double) value / 100;
-        }
-        public static double getValueToRate(int value, boolean inverse) {
-            if(!inverse) return getValueToRate(value);
-            return (double) (100 / value);
-        }
     }
 }

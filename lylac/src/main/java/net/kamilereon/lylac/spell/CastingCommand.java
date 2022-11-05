@@ -2,7 +2,7 @@ package net.kamilereon.lylac.spell;
 
 import org.bukkit.scheduler.BukkitTask;
 
-import net.kamilereon.lylac.Utils;
+import net.kamilereon.lylac.LylacUtils;
 import net.kamilereon.lylac.entity.Player;
 
 /**
@@ -65,7 +65,7 @@ public class CastingCommand {
 
         if(castingCommandCode == CastingCommandCode.F) {
             this.nextSlotState = !this.nextSlotState;
-            this.waitingForCommandsClear = Utils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
+            this.waitingForCommandsClear = LylacUtils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
             return;
         }
 
@@ -74,7 +74,7 @@ public class CastingCommand {
                 commands[i] = castingCommandCode;
 
                 // 1.5초 시간 지난 후 commands 초기화
-                this.waitingForCommandsClear = Utils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
+                this.waitingForCommandsClear = LylacUtils.Scheduler.executeAfterTick(() -> resetCommands(), 30);
                 return;
             }
         }
