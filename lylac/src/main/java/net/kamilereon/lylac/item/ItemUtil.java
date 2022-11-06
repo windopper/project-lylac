@@ -2,6 +2,7 @@ package net.kamilereon.lylac.item;
 
 import java.util.UUID;
 
+import org.bson.Document;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -33,18 +34,18 @@ public class ItemUtil {
      * @param rootItemObject 등록된 아이템 JSON 형식 오브젝트
      * @return 버킷 아이템 리턴
      */
-    public static ItemStack getItemStackFromJSONObject(JsonObject genItemObject, JsonObject rootItemObject) {
+    public static ItemStack getItemStackFromDocument(Document genItemObject, Document rootItemObject) {
         ItemStack item = LylacItem.builder()
-        .setName(genItemObject.get("name").getAsString())
-        .setMaterial(Material.getMaterial(rootItemObject.get("material").getAsString()))
+        .setName(genItemObject.getString("name"))
+        .setMaterial(Material.getMaterial(rootItemObject.getString("material")))
         .build();
         ItemMeta itemMeta = item.getItemMeta();
         for(LylacItem.GeneratedItemModelField field : LylacItem.GeneratedItemModelField.values()) {
             if(field.getType() == PersistentDataType.STRING) {
-                setValueToPersistentDataContainer(itemMeta, field.name(), field.getType(), genItemObject.get(field.name()).getAsString());
+                setValueToPersistentDataContainer(itemMeta, field.name(), field.getType(), genItemObject.getString(field.name()));
             }
             else if(field.getType() == PersistentDataType.INTEGER) {
-                setValueToPersistentDataContainer(itemMeta, field.name(), field.getType(), genItemObject.get(field.name()).getAsInt());
+                setValueToPersistentDataContainer(itemMeta, field.name(), field.getType(), genItemObject.getInteger(field.name()));
             }
         }
         return item;
