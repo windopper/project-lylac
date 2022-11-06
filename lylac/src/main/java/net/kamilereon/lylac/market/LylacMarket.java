@@ -1,29 +1,26 @@
 package net.kamilereon.lylac.market;
 
-import java.util.Date;
-
 import org.bson.Document;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 
+import net.kamilereon.lylac.LylacUtils;
 import net.kamilereon.lylac.database.MongoConfig;
 import net.kamilereon.lylac.database.MongoConfig.LylacMongoCollections;
 import net.kamilereon.lylac.entity.Player;
+import net.kamilereon.lylac.event.player.LylacPlayerMarketOpenEvent;
 import net.kamilereon.lylac.item.ItemUtil;
+import net.kamilereon.lylac.permission.LylacPlayerPermission;
+import net.kamilereon.lylac.permission.LylacPlayerPermission.LylacPlayerPermissionType;
 
 public class LylacMarket {
 
@@ -32,6 +29,7 @@ public class LylacMarket {
                                                 18, 19, 20, 21, 22, 23, 24,
                                                 27, 28, 29, 30, 31, 32, 33,
                                                 45, 46, 47, 48, 49, 50, 51};
+
     private final Inventory market = Bukkit.createInventory(null, 54, "market");
     private final Player player;
     private boolean LYLAC_MARKET_SHOW_ITEM_LOADING = false;
@@ -40,7 +38,7 @@ public class LylacMarket {
         this.player = player;
     }
 
-    private synchronized void loadItems(int page) {
+    private void loadItems(int page) {
         LYLAC_MARKET_SHOW_ITEM_LOADING = true;
         try {
             MongoDatabase database = MongoConfig.mongoDatabase();
@@ -82,6 +80,17 @@ public class LylacMarket {
     }
 
     public static LylacMarket openMarket(Player player) {
+
+        // 플레이어가 마켓을 열 수 있는 권한이 있는지 체크
+        if(!player.getPermission().checkPermission(player,
+             LylacPlayerPermissionType.LYLAC_MARKET_OPEN_GUI,
+              "마켓에 진입 할 수 있는 권한이 없습니다.")) return null;
+
+        // 플레이어가 마켓을 열 때 이벤트 방출
+        LylacPlayerMarketOpenEvent event = new LylacPlayerMarketOpenEvent(player);
+        LylacUtils.Event.callEvent(event);
+        if(event.isCancelled()) return null;
+
         LylacMarket lylacMarket = new LylacMarket(player);
         lylacMarket.loadItems(0);
         player.getBukkitEntity().openInventory(lylacMarket.market);

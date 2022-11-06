@@ -45,6 +45,8 @@ import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 public class Player extends Entity implements IPlayer, Damageable, ManaControllable {
 
     private final org.bukkit.entity.Player bukkitEntity;
+    private String characterUUID = null;
+
     /**
      * 아티팩트 인벤토리
      * @see ArtifactInventory
@@ -92,12 +94,13 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     public void init() {
 
         // 플레이어 데이터 불러오기
-        
+        loadData();
 
         // 플레이어 초기 설정
         this.bukkitEntity.setMaximumNoDamageTicks(0);
 
         // 초기 능력치 계산 및 적용
+        
 
         this.bukkitTaskEveryTick = Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
             update();
@@ -181,6 +184,7 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public <T2 extends Entity> void mutateMana(int mutateValue, ManaMutateCause cause, T2 by) {
+
         LylacPlayerManaMutateEvent<T2> event = new LylacPlayerManaMutateEvent<>(this, by, mutateValue, cause);
         LylacUtils.Event.callEvent(event);
 
@@ -258,21 +262,18 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void startQuest(LylacQuestList quest) {
-        if(permission.checkPermission(this, LylacPlayerPermissionType.LYLAC_QUEST_START, "퀘스트를 시작할 수 없습니다")) {
-
-        }
+        if(!permission.checkPermission(this, LylacPlayerPermissionType.LYLAC_QUEST_START, "퀘스트를 시작할 수 없습니다")) return;
     }
 
     @Override
     public void progressQuest(LylacQuestList quest) {
-        // TODO Auto-generated method stub
+        if(!permission.checkPermission(this, LylacPlayerPermissionType.LYLAC_QUEST_NEXT_STAGE, "퀘스트를 진행 할 권한이 없습니다")) return;
         
     }
 
     @Override
     public void completeQuest(LylacQuestList quest) {
-        // TODO Auto-generated method stub
-        
+        if(!permission.checkPermission(this, LylacPlayerPermissionType.LYLAC_QUEST_COMPLETE, "퀘스트를 완료할 권한이 없습니다.")) return;
     }
 
     @Override
@@ -312,6 +313,30 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void saveData() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void loadCharacterData(String uuid) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void enableCharacterSwitchMode() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void createCharacter() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void removeCharacter(String uuid) {
         // TODO Auto-generated method stub
         
     }

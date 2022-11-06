@@ -2,7 +2,6 @@ package net.kamilereon.lylac.entity;
 
 import org.bukkit.entity.Player;
 
-import net.kamilereon.lylac.event.Cause.XpMutateCause;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 import net.kamilereon.lylac.permission.LylacPlayerPermission;
 import net.kamilereon.lylac.permission.LylacPlayerPermission.LylacPlayerPermissionType;
@@ -69,8 +68,31 @@ public interface IPlayer {
     public void loadData();
 
     /**
-     * 플레이어 데이터를 DB에 저장한다.
+     * 플레이어 데이터와 캐릭터 데이터를 DB에 저장한다.
      */
     public void saveData();
+
+    /**
+     * 캐릭터 데이터를 DB로부터 불러온다.
+     */
+    public void loadCharacterData(String uuid);
+
+    /**
+     * 플레이어의 캐릭터를 바꾸는 상태로 진입시킨다.
+     * <p>{@link net.kamilereon.lylac.entity.Player}의 모든 필드 값이 초기화 된다.</p>
+     * @see net.kamilereon.lylac.entity.Player
+     */
+    public void enableCharacterSwitchMode();
+
+    /**
+     * 캐릭터를 생성한다.
+     */
+    public void createCharacter();
+
+    /**
+     * 캐릭터를 삭제한다.
+     * @param uuid 삭제하고자 하는 캐릭터의 고유 식별 번호
+     */
+    public void removeCharacter(String uuid);
 
 }

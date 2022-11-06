@@ -34,7 +34,7 @@ public class LylacPlayerPermission {
     }
 
     /**
-     * 권한을 확인하여 확인되지 않는 다면 해당 플레이어에게 경고 메시지를 출력합니다.
+     * 권한을 확인하여 확인되지 않는다면 해당 플레이어에게 경고 메시지를 출력합니다.
      * 
      * @param player 라일락 플레이어 객체
      * @param type 권한의 종류
@@ -48,10 +48,10 @@ public class LylacPlayerPermission {
     }
 
     public enum LylacPlayerPermissionType {
-        LYLAC_TRADE_MARKET_OPEN_GUI,
-        LYLAC_TRADE_MARKET_BUY_ITEM,
-        LYLAC_TRADE_MARKET_SELL_ITEM,
-        LYLAC_TRADE_MARKET_GET_MONEY,
+        LYLAC_MARKET_OPEN_GUI,
+        LYLAC_MARKET_BUY_ITEM,
+        LYLAC_MARKET_SELL_ITEM,
+        LYLAC_MARKET_GET_MONEY,
 
         LYLAC_QUEST_START,
         LYLAC_QUEST_NEXT_STEP,
