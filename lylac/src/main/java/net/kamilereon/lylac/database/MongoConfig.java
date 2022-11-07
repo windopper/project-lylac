@@ -33,6 +33,12 @@ public class MongoConfig {
         return database.getCollection(collection.name());
     }
 
+    public static MongoCollection<Document> getMongoCollection(LylacMongoCollections collection) {
+        return mongoDatabase().getCollection(collection.name());
+    }
+
+    
+
     public enum LylacMongoCollections {
         rootItem,
         player,

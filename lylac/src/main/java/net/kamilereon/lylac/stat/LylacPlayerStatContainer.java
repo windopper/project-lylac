@@ -1,10 +1,14 @@
 package net.kamilereon.lylac.stat;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+
+import org.bson.Document;
 
 import net.kamilereon.lylac.LylacUtils;
 import net.kamilereon.lylac.entity.Player;
 import net.kamilereon.lylac.event.player.LylacPlayerUpdateStatEvent;
+import net.kamilereon.lylac.general.Loadable;
 
 /**
  * 플레이어의 능력치에 관한 클래스
@@ -16,7 +20,7 @@ import net.kamilereon.lylac.event.player.LylacPlayerUpdateStatEvent;
  * <b>{@link #setStat(LylacPlayerStats, int)}을 통하여 필드 값을 설정해야 <code>LylacPlayerUpdateStatEvent</code>
  * 이벤트가 송신됨</b>
  */
-public class LylacPlayerStatContainer {
+public class LylacPlayerStatContainer implements Loadable {
 
     private static final int RATE_DEFAULT = 100;
 
@@ -63,6 +67,22 @@ public class LylacPlayerStatContainer {
         catch(Exception e) {
 
         }
+    }
+
+    @Override
+    public void load(Document doc) {
+        doc.forEach((K, V) -> {
+            assert V.getClass() == int.class: V.getClass();
+            try {
+                Field field = this.getClass().getDeclaredField(K);
+                field.setAccessible(true);
+                field.setInt(this, (int) V);
+                field.setAccessible(false);
+            }
+            catch(Exception e) {
+                
+            }
+        });
     }
 
         /**
@@ -133,4 +153,5 @@ public class LylacPlayerStatContainer {
             return (double) (100 / value);
         }
     }
+
 }

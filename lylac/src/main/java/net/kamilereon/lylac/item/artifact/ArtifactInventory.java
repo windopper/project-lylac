@@ -3,11 +3,14 @@ package net.kamilereon.lylac.item.artifact;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.bson.Document;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import net.kamilereon.lylac.entity.Player;
+import net.kamilereon.lylac.general.Loadable;
 import net.kamilereon.lylac.item.ItemUtil;
 import net.kamilereon.lylac.item.LylacItem;
 
@@ -19,7 +22,7 @@ import net.kamilereon.lylac.item.LylacItem;
  * @version 1.0.0
  * @see Player
  */
-public class ArtifactInventory {
+public class ArtifactInventory implements Loadable {
 
     private final Player inventoryHolder;
 
@@ -58,6 +61,11 @@ public class ArtifactInventory {
 
     public void removeArtifact(ArtifactType artifactType) {
         artifacts.replace(artifactType, null);
+    }
+
+    @Override
+    public void load(Document doc) {
+        
     }
 
     /**

@@ -1,16 +1,19 @@
 package net.kamilereon.lylac.statistics;
 
 import java.lang.reflect.Field;
+
 import org.bson.Document;
 
 import net.kamilereon.lylac.entity.Player;
 
-public class LylacPlayerStatisticsContainer {
+/**
+ * 플레이어의 각 캐릭터들의 모든 통계 자료를 저장하는 컨테이너
+ */
+public class LylacPlayerCharacterStatisticsContainer {
     
     private final Player player;
 
-    private long firstLogin = System.currentTimeMillis();
-    private long lastLogin = System.currentTimeMillis();
+    private long createdAt = System.currentTimeMillis();
 
     private long logins = 0;
     private long deaths = 0;
@@ -21,11 +24,7 @@ public class LylacPlayerStatisticsContainer {
     private long entityKill = 0;
     private long playerKill = 0;
 
-    private long totalDuelCount = 0;
-    private long totalDuelWin = 0;
-    private long totalDuelLose = 0;
-
-    public LylacPlayerStatisticsContainer(Player player) {
+    public LylacPlayerCharacterStatisticsContainer(Player player) {
         this.player = player;
     }
 
@@ -36,7 +35,7 @@ public class LylacPlayerStatisticsContainer {
      */
     public void load(Document doc) {
         if(doc == null) return;
-        for(LylacPlayerStatistics statistic : LylacPlayerStatistics.values()) {
+        for(LylacPlayerCharacterStatistics statistic : LylacPlayerCharacterStatistics.values()) {
             try {
                 String K = statistic.name();
                 long V = doc.getLong(K);
@@ -53,7 +52,7 @@ public class LylacPlayerStatisticsContainer {
 
     public Document getAsDocument() {
         Document statistics = new Document();
-        for(LylacPlayerStatistics statistic : LylacPlayerStatistics.values()) {
+        for(LylacPlayerCharacterStatistics statistic : LylacPlayerCharacterStatistics.values()) {
             try {
                 String K = statistic.name();
                 Field field = this.getClass().getDeclaredField(K);
@@ -69,7 +68,7 @@ public class LylacPlayerStatisticsContainer {
         return statistics;
     }
 
-    private enum LylacPlayerStatistics {
+    private enum LylacPlayerCharacterStatistics {
         firstLogin,
         lastLogin,
         logins,

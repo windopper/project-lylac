@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -45,6 +46,7 @@ import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.SpellTechInventory;
 import net.kamilereon.lylac.stat.LylacPlayerStatContainer;
 import net.kamilereon.lylac.stat.LylacPlayerStatContainer.LylacPlayerStats;
+import net.kamilereon.lylac.statistics.LylacPlayerCharacterStatisticsContainer;
 import net.kamilereon.lylac.statistics.LylacPlayerStatisticsContainer;
 import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 
@@ -57,37 +59,32 @@ import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 public class Player extends Entity implements IPlayer, Damageable, ManaControllable {
 
     private final org.bukkit.entity.Player bukkitEntity;
+    
+    /* 해당 필드부터 모든 라일락 캐릭터가 공유하는 객체 */
+    /* 즉, 플레이어가 로그인 했을때 "1회"만 로드하면 됨 */
+    
+    private final LylacPlayerPermission permission = new LylacPlayerPermission();
+    
+    private final LylacParticle particle = new LylacParticle(this);
+    
+    private final LylacPlayerStatisticsContainer statisticsContainer = new LylacPlayerStatisticsContainer(this);
+    
+    /* 해당 필드부터 단일 라일락 캐릭터가 사용하는 객체 */
+    /* 즉, 플레이어가 캐릭터를 바꾸거나, 새로 생성할 때마다 로드해야 함 */
+    
     private String characterUUID = null;
-
-    /**
-     * 아티팩트 인벤토리
-     * @see ArtifactInventory
-     */
+    
     private final ArtifactInventory artifactInventory = new ArtifactInventory(this);
-
-    /**
-     * 스펠테크 인벤토리
-     * @see SpellTechInventory
-     */
+    
     private final SpellTechInventory spellTechInventory = new SpellTechInventory(this);
-
-    /**
-     * 스펠 인벤토리. 플레이어가 지정한 스펠 목록을 저장하고 있는 객체
-     * <p>{@link CastingCommand}를 통하여 {@link SpellInventory}에 저장된 {@link Spell}들을 실행</p>
-     * @see SpellInventory
-     * @see CastingCommand
-     */
+    
     private final SpellInventory spellInventory = new SpellInventory(this);
-
+    
     private final CastingCommand castingCommand = new CastingCommand(this);
 
-    private final LylacPlayerPermission permission = new LylacPlayerPermission();
-
-    private final LylacParticle particle = new LylacParticle(this);
-
     private final LylacPlayerStatContainer stat = new LylacPlayerStatContainer(this);
-
-    private final LylacPlayerStatisticsContainer statisticsContainer = new LylacPlayerStatisticsContainer(this);
+    
+    private final LylacPlayerCharacterStatisticsContainer characterStatisticsContainer = new LylacPlayerCharacterStatisticsContainer(this);
 
     private BukkitTask bukkitTaskEveryTick;
     private BukkitTask bukkitTaskEvery5Ticks;
@@ -343,6 +340,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     public void saveData() {
         MongoDatabase database = MongoConfig.mongoDatabase();
         MongoCollection<Document> document = MongoConfig.getMongoCollection(database, LylacMongoCollections.player);
+
+        //TODO 현재 플레이어가 캐릭터를 선택한 상태 여부에 따라 분기문 작성 필요
         Bson updates = Updates.combine(
             // username 저장
             Updates.set("username", bukkitEntity.getName()),
@@ -359,8 +358,37 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void loadCharacterData(String uuid) {
-        // TODO Auto-generated method stub
-        
+        MongoCollection<Document> document = MongoConfig.getMongoCollection(LylacMongoCollections.player);
+        Document playerResult = document
+        .find(Filters.eq("uuid", getBukkitEntity().getUniqueId().toString()))
+        .first();
+        // 플레이어가 소유한 캐릭터들 가져오기
+        Document[] characters = playerResult.get("characters", Document[].class);
+        // 검색 결과
+        Document searched = null;
+        // 소유한 캐릭터들을 순회하며 
+        for(Document character : characters) {
+            // 캐릭터 uuid와 찾고자 하는 uuid가 같지 않으면 continue
+            if(!character.getString("uuid").equals(uuid)) continue;
+            // 같다면 변수에 저장 후 break
+            searched = character;
+            break;
+        }
+        // 만약 검색 결과가 없다면 리턴
+        if(searched == null) return;
+
+        this.characterUUID = uuid;
+
+        int level = searched.getInteger("level");
+        String mode = searched.getString("mode");
+        String world = searched.getString("world");
+        int[] location = searched.get("location", int[].class);
+        Document stats = searched.get("stats", Document.class);
+        Document statistics = searched.get("statistics", Document.class);
+        Document[] inventory = searched.get("inventory", Document[].class);
+        ObjectId[] spells = searched.get("splls", ObjectId[].class);
+        ObjectId[] spellTechs = searched.get("spellTechs", ObjectId[].class);
+
     }
 
     @Override
