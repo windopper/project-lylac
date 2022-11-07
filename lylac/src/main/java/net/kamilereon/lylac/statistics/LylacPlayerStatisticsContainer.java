@@ -3,6 +3,7 @@ package net.kamilereon.lylac.statistics;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 import org.bson.Document;
 
@@ -18,9 +19,15 @@ public class LylacPlayerStatisticsContainer {
     
     private final Player player;
 
-    private long totalLogin = 0;
+    private long firstLogin = System.currentTimeMillis();
+    private long lastLogin = System.currentTimeMillis();
+
+    private long logins = 0;
+    private long deaths = 0;
+
     private long playTime = 0;
 
+    private long blocksWalked = 0;
     private long entityKill = 0;
     private long playerKill = 0;
 
@@ -32,17 +39,20 @@ public class LylacPlayerStatisticsContainer {
         this.player = player;
     }
 
-    public void load() {
-        MongoDatabase database = MongoConfig.mongoDatabase();
-        MongoCollection<Document> collection = MongoConfig.getMongoCollection(database, LylacMongoCollections.player);
-        Document doc = collection.find(eq("uuid", player.getBukkitEntity().getUniqueId().toString())).first();
+    /**
+     * statistics object를 받아서 해당 객체에 로드해 주는 메서드
+     * 
+     * @param doc statistics object 
+     */
+    public void load(Document doc) {
+        if(doc == null) return;
         for(LylacPlayerStatistics statistic : LylacPlayerStatistics.values()) {
             try {
                 String K = statistic.name();
-                int V = doc.getInteger(K, 0);
+                long V = doc.getLong(K);
                 Field field = this.getClass().getDeclaredField(K);
                 field.setAccessible(true);
-                field.setInt(this, V);
+                field.setLong(this, V);
                 field.setAccessible(false);
             }
             catch(Exception e) {
@@ -51,17 +61,35 @@ public class LylacPlayerStatisticsContainer {
         }
     }
 
-    public void save() {
-        
+    public Document getAsDocument() {
+        Document statistics = new Document();
+        for(LylacPlayerStatistics statistic : LylacPlayerStatistics.values()) {
+            try {
+                String K = statistic.name();
+                Field field = this.getClass().getDeclaredField(K);
+                field.setAccessible(true);
+                long V = field.getLong(this);
+                field.setAccessible(false);
+                statistics.append(K, V);   
+            }
+            catch(Exception e) {
+
+            }
+        }
+        return statistics;
     }
 
     public enum LylacPlayerStatistics {
-        totalLogin,
+        firstLogin,
+        lastLogin,
+        logins,
+        deaths,
         playTime,
-        entityKill,
-        playerKill,
+        blocksWalked,
+        entityKilled,
+        playerKilled,
         totalDuelCount,
         totalDuelWin,
-        totalDueLose;
+        totalDuelLose;
     }
 }

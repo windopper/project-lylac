@@ -1,17 +1,28 @@
 package net.kamilereon.lylac.entity;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
+
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.LylacUtils;
+import net.kamilereon.lylac.database.MongoConfig;
+import net.kamilereon.lylac.database.MongoConfig.LylacMongoCollections;
 import net.kamilereon.lylac.element.ElementDamage;
 import net.kamilereon.lylac.element.ElementDamageRange;
 import net.kamilereon.lylac.event.Cause.HealthMutateCause;
@@ -34,6 +45,7 @@ import net.kamilereon.lylac.spell.SpellInventory;
 import net.kamilereon.lylac.spell.SpellTechInventory;
 import net.kamilereon.lylac.stat.LylacPlayerStatContainer;
 import net.kamilereon.lylac.stat.LylacPlayerStatContainer.LylacPlayerStats;
+import net.kamilereon.lylac.statistics.LylacPlayerStatisticsContainer;
 import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 
 /**
@@ -74,6 +86,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     private final LylacParticle particle = new LylacParticle(this);
 
     private final LylacPlayerStatContainer stat = new LylacPlayerStatContainer(this);
+
+    private final LylacPlayerStatisticsContainer statisticsContainer = new LylacPlayerStatisticsContainer(this);
 
     private BukkitTask bukkitTaskEveryTick;
     private BukkitTask bukkitTaskEvery5Ticks;
@@ -308,13 +322,39 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void loadData() {
-        // TODO Auto-generated method stub
+        MongoDatabase database = MongoConfig.mongoDatabase();
+        MongoCollection<Document> document = MongoConfig.getMongoCollection(database, LylacMongoCollections.player);
+        Document playerResult = document
+            .find(Filters.eq("uuid", getBukkitEntity().getUniqueId().toString()))
+            .first();
+
+        // username 불러오기
+        // uuid 불러오기
+
+        // characters 불러오기
+
+        // statistics 불러오기
+        Document statisticsDoc = playerResult.get("statistics", Document.class);
+        statisticsContainer.load(statisticsDoc);
+        // store 불러오기
     }
 
     @Override
     public void saveData() {
-        // TODO Auto-generated method stub
-        
+        MongoDatabase database = MongoConfig.mongoDatabase();
+        MongoCollection<Document> document = MongoConfig.getMongoCollection(database, LylacMongoCollections.player);
+        Bson updates = Updates.combine(
+            // username 저장
+            Updates.set("username", bukkitEntity.getName()),
+            // uuid 저장
+            Updates.set("uuid", bukkitEntity.getUniqueId().toString()),
+            // characters 저장
+            
+            // statistics 저장
+            Updates.set("statistics", statisticsContainer.getAsDocument())
+            // store 저장
+        );
+        UpdateResult result = document.updateOne(Filters.eq("uuid"), updates);
     }
 
     @Override
@@ -326,7 +366,6 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     @Override
     public void enableCharacterSwitchMode() {
         // TODO Auto-generated method stub
-        
     }
 
     @Override

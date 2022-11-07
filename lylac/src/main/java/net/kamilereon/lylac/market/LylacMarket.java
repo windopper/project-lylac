@@ -56,15 +56,20 @@ public class LylacMarket {
             MongoCursor<Document> _marketResult = marketResult.iterator();
 
             for(int i=0; i<ITEM_LOCATION.length; i++) {
+                // 다음 결과가 있다면
                 if(_marketResult.hasNext()) {
+                    // 다음 결과를 저장
                     Document marketObject = _marketResult.next();
-
+                    // item 도큐먼트를 가져와서
                     Document itemObject = Document.parse(marketObject.get("item").toString());
-                    String itemUUID = itemObject.getString("uuid");
-                    //Date date = itemObject.getDate("registeredDate");
+                    // 해당 아이템의 고유 번호를 가져오기
+                    String itemCode = itemObject.getString("itemCode");
 
-                    Document rootItemResult = rootItemDocument.find(Filters.eq("uuid", itemUUID)).first();
+                    // 고유번호 해당하는 루트 아이템을 가져오기
+                    Document rootItemResult = rootItemDocument.find(Filters.eq("uuid", itemCode)).first();
+                    // itemStack 으로 변환한 후
                     ItemStack itemStack = ItemUtil.getItemStackFromDocument(itemObject, rootItemResult);
+                    // 마켓 인벤토리로 업데이트
                     market.setItem(ITEM_LOCATION[i], itemStack);
                 }
                 else {
@@ -106,6 +111,15 @@ public class LylacMarket {
      * @param uuid 구매하고자 하는 아이템의 uuid
      */
     public void buyItem(String uuid) {
+
+    }
+
+    /**
+     * 아이템을 판매
+     * 
+     * @param itemStack 판매하고 싶은 아이템
+     */
+    public void sellItem(ItemStack itemStack) {
 
     }
 
