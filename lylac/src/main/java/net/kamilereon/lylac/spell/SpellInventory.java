@@ -3,7 +3,10 @@ package net.kamilereon.lylac.spell;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.Document;
+
 import net.kamilereon.lylac.entity.Player;
+import net.kamilereon.lylac.general.LylacData;
 
 /**
  * 스펠 인벤토리 클래스. 해당 클래스에서 플레이어가 등록한 스펠들을 저장하고 관리한다.
@@ -12,7 +15,7 @@ import net.kamilereon.lylac.entity.Player;
  * @see Spell
  */
 
-public class SpellInventory {
+public class SpellInventory implements LylacData {
 
     private final Player player;
     private final Spell[] registeredSpells = new Spell[8];
@@ -44,5 +47,16 @@ public class SpellInventory {
     private boolean isValidSpellPosition(int spellPosition) {
         if(spellPosition >= 0 && spellPosition < 8) return true;
         return false;
+    }
+
+    @Override
+    public void load(Document doc) {
+        
+    }
+
+    @Override
+    public Document getAsDocument() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

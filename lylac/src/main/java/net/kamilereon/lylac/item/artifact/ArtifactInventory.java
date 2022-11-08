@@ -10,7 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import net.kamilereon.lylac.entity.Player;
-import net.kamilereon.lylac.general.Loadable;
+import net.kamilereon.lylac.general.LylacData;
 import net.kamilereon.lylac.item.ItemUtil;
 import net.kamilereon.lylac.item.LylacItem;
 
@@ -22,7 +22,7 @@ import net.kamilereon.lylac.item.LylacItem;
  * @version 1.0.0
  * @see Player
  */
-public class ArtifactInventory implements Loadable {
+public class ArtifactInventory implements LylacData {
 
     private final Player inventoryHolder;
 
@@ -46,7 +46,7 @@ public class ArtifactInventory implements Loadable {
         put(ArtifactType.SCEPTOR, null);
     }};
 
-
+    
     public ArtifactInventory(Player player) {
         this.inventoryHolder = player;
     }
@@ -54,11 +54,11 @@ public class ArtifactInventory implements Loadable {
     public void setArtifact(ArtifactType artifactType, ItemStack artifact) {
         artifacts.replace(artifactType, artifact);
     }
-
+    
     public ItemStack getArtifact(ArtifactType artifactType) {
         return artifacts.get(artifactType);
     }
-
+    
     public void removeArtifact(ArtifactType artifactType) {
         artifacts.replace(artifactType, null);
     }
@@ -67,7 +67,13 @@ public class ArtifactInventory implements Loadable {
     public void load(Document doc) {
         
     }
-
+    
+    @Override
+    public Document getAsDocument() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     /**
      * 보유한 모든 아티팩트들의 스탯을 합한 후, 해당 인벤토리 소유자의 스탯에 업데이트하는 메서드
      * <p>{@link Player#callWhenArtifactChanges()} 메서드에 의해서 자동으로 실행됨</p>
@@ -117,4 +123,5 @@ public class ArtifactInventory implements Loadable {
         RING2,
         SCEPTOR,
     }
+
 }

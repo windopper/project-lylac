@@ -5,11 +5,12 @@ import java.lang.reflect.Field;
 import org.bson.Document;
 
 import net.kamilereon.lylac.entity.Player;
+import net.kamilereon.lylac.general.LylacData;
 
 /**
  * 플레이어의 각 캐릭터들의 모든 통계 자료를 저장하는 컨테이너
  */
-public class LylacPlayerCharacterStatisticsContainer {
+public class LylacPlayerCharacterStatisticsContainer implements LylacData {
     
     private final Player player;
 
@@ -33,12 +34,14 @@ public class LylacPlayerCharacterStatisticsContainer {
      * 
      * @param doc statistics object 
      */
+    @Override
     public void load(Document doc) {
-        if(doc == null) return;
+        Document statistics = doc.get("statistics", Document.class);
+        if(statistics == null) return;
         for(LylacPlayerCharacterStatistics statistic : LylacPlayerCharacterStatistics.values()) {
             try {
                 String K = statistic.name();
-                long V = doc.getLong(K);
+                long V = statistics.getLong(K);
                 Field field = this.getClass().getDeclaredField(K);
                 field.setAccessible(true);
                 field.setLong(this, V);
@@ -50,6 +53,7 @@ public class LylacPlayerCharacterStatisticsContainer {
         }
     }
 
+    @Override
     public Document getAsDocument() {
         Document statistics = new Document();
         for(LylacPlayerCharacterStatistics statistic : LylacPlayerCharacterStatistics.values()) {

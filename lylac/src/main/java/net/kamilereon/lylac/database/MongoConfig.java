@@ -42,6 +42,7 @@ public class MongoConfig {
     public enum LylacMongoCollections {
         rootItem,
         player,
-        market;
+        market,
+        spell;
     }
 }

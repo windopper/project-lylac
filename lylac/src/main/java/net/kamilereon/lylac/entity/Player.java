@@ -1,11 +1,6 @@
 package net.kamilereon.lylac.entity;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -15,6 +10,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -22,6 +18,7 @@ import com.mongodb.client.result.UpdateResult;
 
 import net.kamilereon.lylac.Lylac;
 import net.kamilereon.lylac.LylacUtils;
+import net.kamilereon.lylac.configuration.LylacPlayerConfiguration;
 import net.kamilereon.lylac.database.MongoConfig;
 import net.kamilereon.lylac.database.MongoConfig.LylacMongoCollections;
 import net.kamilereon.lylac.element.ElementDamage;
@@ -35,6 +32,7 @@ import net.kamilereon.lylac.event.player.LylacPlayerManaMutateEvent;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory;
 import net.kamilereon.lylac.item.artifact.ArtifactInventory.ArtifactType;
 import net.kamilereon.lylac.particle.LylacParticle;
+import net.kamilereon.lylac.quest.LylacQuestManager;
 import net.kamilereon.lylac.quest.LylacQuest.LylacQuestList;
 import net.kamilereon.lylac.item.ItemUtil;
 import net.kamilereon.lylac.item.LylacItem;
@@ -68,6 +66,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     private final LylacParticle particle = new LylacParticle(this);
     
     private final LylacPlayerStatisticsContainer statisticsContainer = new LylacPlayerStatisticsContainer(this);
+
+    private final LylacPlayerConfiguration configuration = new LylacPlayerConfiguration(this);
     
     /* 해당 필드부터 단일 라일락 캐릭터가 사용하는 객체 */
     /* 즉, 플레이어가 캐릭터를 바꾸거나, 새로 생성할 때마다 로드해야 함 */
@@ -85,6 +85,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
     private final LylacPlayerStatContainer stat = new LylacPlayerStatContainer(this);
     
     private final LylacPlayerCharacterStatisticsContainer characterStatisticsContainer = new LylacPlayerCharacterStatisticsContainer(this);
+
+    private final LylacQuestManager questManager = new LylacQuestManager(this);
 
     private BukkitTask bukkitTaskEveryTick;
     private BukkitTask bukkitTaskEvery5Ticks;
@@ -358,8 +360,9 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
     @Override
     public void loadCharacterData(String uuid) {
-        MongoCollection<Document> document = MongoConfig.getMongoCollection(LylacMongoCollections.player);
-        Document playerResult = document
+        MongoCollection<Document> spellDocument = MongoConfig.getMongoCollection(LylacMongoCollections.spell);
+        MongoCollection<Document> playerDocument = MongoConfig.getMongoCollection(LylacMongoCollections.player);
+        Document playerResult = playerDocument
         .find(Filters.eq("uuid", getBukkitEntity().getUniqueId().toString()))
         .first();
         // 플레이어가 소유한 캐릭터들 가져오기
@@ -379,15 +382,18 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
 
         this.characterUUID = uuid;
 
-        int level = searched.getInteger("level");
-        String mode = searched.getString("mode");
-        String world = searched.getString("world");
-        int[] location = searched.get("location", int[].class);
-        Document stats = searched.get("stats", Document.class);
-        Document statistics = searched.get("statistics", Document.class);
-        Document[] inventory = searched.get("inventory", Document[].class);
-        ObjectId[] spells = searched.get("splls", ObjectId[].class);
-        ObjectId[] spellTechs = searched.get("spellTechs", ObjectId[].class);
+        //level
+        //mode
+        //world
+        //location
+        //stats
+        this.stat.load(searched);
+        //statistics
+        this.characterStatisticsContainer.load(searched);
+        //spells
+        this.spellInventory.load(searched);
+        //spellTechs
+        this.spellTechInventory.load(searched);
 
     }
 

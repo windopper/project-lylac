@@ -8,7 +8,7 @@ import org.bson.Document;
 import net.kamilereon.lylac.LylacUtils;
 import net.kamilereon.lylac.entity.Player;
 import net.kamilereon.lylac.event.player.LylacPlayerUpdateStatEvent;
-import net.kamilereon.lylac.general.Loadable;
+import net.kamilereon.lylac.general.LylacData;
 
 /**
  * 플레이어의 능력치에 관한 클래스
@@ -20,7 +20,7 @@ import net.kamilereon.lylac.general.Loadable;
  * <b>{@link #setStat(LylacPlayerStats, int)}을 통하여 필드 값을 설정해야 <code>LylacPlayerUpdateStatEvent</code>
  * 이벤트가 송신됨</b>
  */
-public class LylacPlayerStatContainer implements Loadable {
+public class LylacPlayerStatContainer implements LylacData {
 
     private static final int RATE_DEFAULT = 100;
 
@@ -71,7 +71,8 @@ public class LylacPlayerStatContainer implements Loadable {
 
     @Override
     public void load(Document doc) {
-        doc.forEach((K, V) -> {
+        Document stats = doc.get("stats", Document.class);
+        stats.forEach((K, V) -> {
             assert V.getClass() == int.class: V.getClass();
             try {
                 Field field = this.getClass().getDeclaredField(K);
@@ -84,8 +85,13 @@ public class LylacPlayerStatContainer implements Loadable {
             }
         });
     }
+    
+    @Override
+    public Document getAsDocument() {
+        return null;
+    }
 
-        /**
+    /**
      * 플레이어가 가진 모든 능력치의 이름과 초기값을 저장한 enum 클래스
      * 
      * <p>{@link #getDefaultValue()}를 통하여 해당 능력치 이름의 초기값을 구할 수 있다.</p>
@@ -153,5 +159,6 @@ public class LylacPlayerStatContainer implements Loadable {
             return (double) (100 / value);
         }
     }
+
 
 }
