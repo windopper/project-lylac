@@ -3,14 +3,12 @@ package net.kamilereon.lylac.entity;
 import java.util.Map;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -57,6 +55,8 @@ import net.kamilereon.lylac.spell.CastingCommand.CastingCommandCode;
 public class Player extends Entity implements IPlayer, Damageable, ManaControllable {
 
     private final org.bukkit.entity.Player bukkitEntity;
+
+    private LylacPlayerStatus playerStatus;
     
     /* 해당 필드부터 모든 라일락 캐릭터가 공유하는 객체 */
     /* 즉, 플레이어가 로그인 했을때 "1회"만 로드하면 됨 */
@@ -113,7 +113,8 @@ public class Player extends Entity implements IPlayer, Damageable, ManaControlla
         this.bukkitEntity.setMaximumNoDamageTicks(0);
 
         // 초기 능력치 계산 및 적용
-        
+        this.computeAllArtifactStatsAndUpdate();
+        this.computeElementDamageRangeAndUpdate();
 
         this.bukkitTaskEveryTick = Bukkit.getScheduler().runTask(Lylac.lylacPlugin, () -> {
             update();
